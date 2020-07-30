@@ -1,10 +1,12 @@
 {
   "name": "server",
+  "type": "module",
   "version": "0.1.0",
   "description": "Server for castl3.io",
-  "main": "index.js",
+  "main": "./build/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./build/index.js",
+    "watch:start": "nodemon ./build/index.js"
   },
   "repository": {
     "type": "git",
@@ -17,15 +19,11 @@
   },
   "homepage": "https://github.com/HereIsKevin/castl3.io#readme",
   "devDependencies": {
-    "@types/koa": "^2.11.3",
-    "@types/koa-router": "^7.4.1",
-    "@types/koa-websocket": "^5.0.4",
     "@types/node": "^14.0.27",
+    "nodemon": "^2.0.4",
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@koa/router": "^9.3.1",
-    "koa": "^2.13.0",
-    "koa-websocket": "^6.0.0"
+    "ws": "^7.3.1"
   }
 }
