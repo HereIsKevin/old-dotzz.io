@@ -23,8 +23,8 @@ class Router {
     let current = this.tree;
 
     for (const part of parts) {
-      this.tree.children[part] = { children: {} };
-      current = this.tree.children[part];
+      current.children[part] = { children: {} };
+      current = current.children[part];
     }
 
     current.handler = handler;
