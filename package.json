@@ -1,0 +1,22 @@
+{
+  "name": "castl3.io",
+  "version": "0.1.0",
+  "description": "Simple but addictive MMO game",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HereIsKevin/castl3.io.git"
+  },
+  "author": "Kevin Feng",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/HereIsKevin/castl3.io/issues"
+  },
+  "homepage": "https://github.com/HereIsKevin/castl3.io#readme",
+  "devDependencies": {
+    "lerna": "^3.22.1"
+  }
+}
