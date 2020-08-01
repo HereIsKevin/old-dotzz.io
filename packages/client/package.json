@@ -1,0 +1,22 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "description": "Client for castl3.io",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HereIsKevin/castl3.io.git"
+  },
+  "author": "Kevin Feng",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/HereIsKevin/castl3.io/issues"
+  },
+  "homepage": "https://github.com/HereIsKevin/castl3.io#readme",
+  "devDependencies": {
+    "typescript": "^3.9.7"
+  }
+}
