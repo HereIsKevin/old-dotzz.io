@@ -1,9 +1,9 @@
 export { Route, Router };
 
-import { Handler } from "./server";
-
 import * as http from "http";
 import * as url from "url";
+
+import { Handler } from "./server";
 
 interface Route {
   children: Record<string, Route>;
