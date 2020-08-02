@@ -8,7 +8,7 @@ type Handler = (
 ) => void;
 
 class Server {
-  private server: http.Server;
+  public server: http.Server;
   private handlers: Handler[];
 
   public constructor() {
@@ -36,6 +36,6 @@ class Server {
   }
 
   public listen(port: number): void {
-    this.server.listen(port);
+    this.server.listen(port, "192.168.1.196");
   }
 }
