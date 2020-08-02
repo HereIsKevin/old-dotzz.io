@@ -25,7 +25,7 @@ class Server {
     for (const handler of this.handlers) {
       await handler(request, response);
 
-      if (response.finished) {
+      if (response.writableEnded) {
         break;
       }
     }
@@ -35,7 +35,7 @@ class Server {
     this.handlers.push(handler);
   }
 
-  public listen(port: number): void {
-    this.server.listen(port, "192.168.1.196");
+  public listen(port: number, host: string = "localhost"): void {
+    this.server.listen(port, host);
   }
 }
