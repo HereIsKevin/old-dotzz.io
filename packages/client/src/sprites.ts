@@ -1,4 +1,11 @@
-export { Sprite, Basic };
+export { Sprite, Person };
+
+function randint(min: number, max: number) {
+  const roundedMin = Math.ceil(min);
+  const roundedMax = Math.floor(max);
+
+  return Math.floor(Math.random() * (roundedMax - roundedMin)) + roundedMin;
+}
 
 function circle(
   context: CanvasRenderingContext2D,
@@ -23,9 +30,20 @@ class Sprite {
   }
 }
 
-class Basic extends Sprite {
+class Person extends Sprite {
+  private color: string;
+
+  public constructor(x: number, y: number) {
+    super(x, y);
+
+    this.color = `rgb(${randint(0, 256)}, ${randint(0, 256)}, ${randint(
+      0,
+      256
+    )})`;
+  }
+
   public render(context: CanvasRenderingContext2D) {
-    context.fillStyle = "rgb(0, 0, 0)";
+    context.fillStyle = this.color;
 
     context.beginPath();
     circle(context, this.x, this.y, 20);
