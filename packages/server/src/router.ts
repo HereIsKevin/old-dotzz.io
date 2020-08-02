@@ -1,6 +1,9 @@
 export { Route, Router };
 
+import * as fs from "fs/promises";
 import * as http from "http";
+import mime from "mime";
+import * as path from "path";
 import * as url from "url";
 
 import { Handler } from "./server";
@@ -17,8 +20,8 @@ class Router {
     this.tree = { children: {} };
   }
 
-  public route(path: string, handler: Handler) {
-    const parts = path.split("/").filter((x) => x !== "");
+  public route(route: string, handler: Handler) {
+    const parts = route.split("/").filter((x) => x !== "");
 
     let current = this.tree;
 
@@ -31,6 +34,32 @@ class Router {
     }
 
     current.handler = handler;
+  }
+
+  public async routeStaticDirectory(route: string, filePath: string) {
+    for (const file of await fs.readdir(filePath)) {
+      const currentPath = `${filePath}${path.sep}${file}`;
+
+      if ((await fs.lstat(currentPath)).isDirectory()) {
+        this.routeStaticDirectory(route, currentPath);
+      } else {
+        this.routeStaticFile(
+          `${route}/${file.replace("\\", "/")}`,
+          currentPath
+        );
+      }
+    }
+  }
+
+  public async routeStaticFile(route: string, filePath: string) {
+    this.route(route, async (request, response) => {
+      response.setHeader(
+        "Content-Type",
+        mime.getType(filePath) ?? "text/plain"
+      );
+      response.writeHead(200);
+      response.end(await fs.readFile(filePath));
+    });
   }
 
   public async handle(
