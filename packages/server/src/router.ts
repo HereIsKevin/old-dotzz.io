@@ -23,7 +23,10 @@ class Router {
     let current = this.tree;
 
     for (const part of parts) {
-      current.children[part] = { children: {} };
+      if (typeof current.children[part] === "undefined") {
+        current.children[part] = { children: {} };
+      }
+
       current = current.children[part];
     }
 
