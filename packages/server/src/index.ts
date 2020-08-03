@@ -14,6 +14,8 @@ interface Player {
   y: number;
 }
 
+const dotzzConfig = { port: 8000, host: "localhost" };
+
 class DotZZ {
   private server: Server;
   private router: Router;
@@ -22,9 +24,10 @@ class DotZZ {
   private connectionIds: WeakMap<WebSocket, string>;
   private players: Record<string, Player>;
 
-  public constructor(
-    { port, host }: DotZZConfig = { port: 8000, host: "localhost" }
-  ) {
+  public constructor({
+    port = 8000,
+    host = "localhost",
+  }: DotZZConfig = dotzzConfig) {
     this.server = new Server();
     this.router = new Router();
     this.socket = new WebSocket.Server({ server: this.server.server });
@@ -41,6 +44,10 @@ class DotZZ {
     this.router.routeStaticDirectory("/build/", "../client/build/");
   }
 
+  private initializePlayer(id: string, x: number, y: number): void {
+    // initialize other players on current client
+  }
+
   public listen() {
     this.socket.on("connection", (connection, request) => {
       if (!this.connectionIds.has(connection)) {
@@ -52,7 +59,7 @@ class DotZZ {
         const connectionId = this.connectionIds.get(connection) as string;
 
         if (data.kind === "initialize") {
-          console.log("initialize", data);
+          // console.log("initialize", data);
 
           for (const [id, location] of Object.entries(this.players)) {
             connection.send(JSON.stringify({ kind: "add", id, ...location }));
@@ -72,7 +79,7 @@ class DotZZ {
             }
           }
         } else if (data.kind === "move") {
-          console.log("move", data);
+          // console.log("move", data);
 
           this.players[connectionId] = { x: data.x, y: data.y };
 
@@ -88,7 +95,7 @@ class DotZZ {
             }
           }
         } else if (data.kind === "remove") {
-          console.log("remove", data);
+          // console.log("remove", data);
 
           const response = JSON.stringify({ kind: "remove", id: connectionId });
 
@@ -104,7 +111,9 @@ class DotZZ {
       });
     });
 
-    this.server.use(async (request, response) => this.router.handle(request, response));
+    this.server.use(async (request, response) =>
+      this.router.handle(request, response)
+    );
     this.server.use(async (request, response) => {
       response.writeHead(404);
       response.end("404 Not Found");
