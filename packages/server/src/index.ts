@@ -34,7 +34,7 @@ class DotZZ {
     this.socket = new WebSocket.Server({ server: this.server.server });
     this.arena = new Arena();
     this.config = { port, host };
-    this.connectionIds = new Map();
+    this.connectionIds = new WeakMap();
 
     this.routeStatic();
   }
@@ -76,6 +76,8 @@ class DotZZ {
     this.sendToAll(
       JSON.stringify({ kind: "add", id: connectionId, x: 0, y: 0 })
     );
+
+    connection.send(JSON.stringify({ kind: "id", id: connectionId }));
   }
 
   private movePlayer(connection: WebSocket, message: Movement): void {
