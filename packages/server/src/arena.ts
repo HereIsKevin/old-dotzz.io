@@ -1,14 +1,24 @@
-export { Arena };
+export { Arena, ArenaConfig, Movement, Player, Position };
 
 import { v4 as uuidv4 } from "uuid";
-
-type Direction = "left" | "right" | "up" | "down";
 
 interface Player {
   x: number;
   y: number;
   velocityX: number;
   velocityY: number;
+}
+
+interface Position {
+  x: number;
+  y: number;
+}
+
+interface Movement {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
 }
 
 interface ArenaConfig {
@@ -28,7 +38,7 @@ const arenaConfig = {
 };
 
 class Arena {
-  private players: Record<string, Player>;
+  public players: Record<string, Player>;
   private config: ArenaConfig;
 
   public constructor(config: ArenaConfig = arenaConfig) {
@@ -47,15 +57,18 @@ class Arena {
     delete this.players[id];
   }
 
-  public movePlayer(id: string, directions: Direction[]): void {
+  public movePlayer(id: string, directions: Movement): Position {
     const player = this.players[id];
     const maxVelocity = this.config.maxVelocity;
     const velocityIncrease = this.config.velocityIncrease;
     const velocityDecrease = this.config.velocityDecrease;
 
-    if (directions.includes("down") && player.velocityY < maxVelocity) {
+    player.x += player.velocityX;
+    player.y += player.velocityY;
+
+    if (directions.down && player.velocityY < maxVelocity) {
       player.velocityY += velocityIncrease;
-    } else if (directions.includes("up") && player.velocityY > -maxVelocity) {
+    } else if (directions.up && player.velocityY > -maxVelocity) {
       player.velocityY -= velocityIncrease;
     } else if (player.velocityY < 0) {
       player.velocityY += velocityDecrease;
@@ -63,9 +76,9 @@ class Arena {
       player.velocityY -= velocityDecrease;
     }
 
-    if (directions.includes("right") && player.velocityX < maxVelocity) {
+    if (directions.right && player.velocityX < maxVelocity) {
       player.velocityX += velocityIncrease;
-    } else if (directions.includes("left") && player.velocityX > -maxVelocity) {
+    } else if (directions.left && player.velocityX > -maxVelocity) {
       player.velocityX -= velocityIncrease;
     } else if (player.velocityX < 0) {
       player.velocityX += velocityDecrease;
@@ -84,5 +97,7 @@ class Arena {
     } else if (player.x > this.config.width) {
       player.x = this.config.width;
     }
+
+    return { x: player.x, y: player.y };
   }
 }
