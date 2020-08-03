@@ -119,7 +119,7 @@ class DotZZ {
       response.end("404 Not Found");
     });
 
-    this.server.listen(8000);
+    this.server.listen(this.config.port, this.config.host);
   }
 }
 
