@@ -8,7 +8,6 @@ import { Server } from "./server.js";
 interface DotZZConfig {
   port: number;
   host: string;
-  timeout: number;
 }
 
 interface Player {
@@ -16,7 +15,7 @@ interface Player {
   y: number;
 }
 
-const dotzzConfig = { port: 8000, host: "localhost", timeout: 60000 };
+const dotzzConfig = { port: 8000, host: "localhost" };
 
 class DotZZ {
   private server: Server;
@@ -29,13 +28,12 @@ class DotZZ {
   public constructor({
     port = 8000,
     host = "localhost",
-    timeout = 60000
   }: DotZZConfig = dotzzConfig) {
     this.server = new Server();
     this.router = new Router();
     this.socket = new WebSocket.Server({ server: this.server.server });
     this.arena = new Arena();
-    this.config = { port, host, timeout };
+    this.config = { port, host };
     this.connectionIds = new Map();
 
     this.routeStatic();
