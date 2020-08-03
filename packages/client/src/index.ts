@@ -1,13 +1,6 @@
 import { Game } from "./game.js";
 import { Person } from "./sprites.js";
 
-function randint(min: number, max: number) {
-  const roundedMin = Math.ceil(min);
-  const roundedMax = Math.floor(max);
-
-  return Math.floor(Math.random() * (roundedMax - roundedMin)) + roundedMin;
-}
-
 const target = document.getElementById("main");
 
 if (target === null || !(target instanceof HTMLCanvasElement)) {
@@ -16,10 +9,8 @@ if (target === null || !(target instanceof HTMLCanvasElement)) {
 
 const game = new Game(target);
 
-const connection = new WebSocket("ws://192.168.1.196/");
-const players: Person[] = [];
-
-let id: number;
+const connection = new WebSocket("ws://localhost:8000/");
+const players: Record<string, Person> = {};
 
 const maxSpeed = 4;
 const acceleraion = 0.4;
@@ -42,25 +33,27 @@ const player = new Person(0, 0);
 connection.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
 
-  if (data.kind === "move") {
-    const player = players[data.id];
-    player.x = data.x;
-    player.y = data.y;
-  } else if (data.kind === "remove") {
-    game.sprites.splice(game.sprites.indexOf(players[data.id]), 1);
-    delete players[data.id];
-  } else if (data.kind === "add") {
+  if (data.kind === "add") {
     players[data.id] = new Person(data.x, data.y);
-    game.sprites.push(players[data.id]);
-  } else if (data.kind === "assign") {
-    id = data.id;
+  } else if (data.kind === "move") {
+    const current = players[data.id];
+
+    if (typeof current !== "undefined") {
+      current.x = data.x;
+      current.y = data.y;
+    }
+  } else if (data.kind === "remove") {
+    delete players[data.id];
   }
 });
 
-connection.addEventListener("open", () => {
+let movable = false;
+
+connection.addEventListener("open", (event) => {
   connection.send(
-    JSON.stringify({ kind: "request", x: player.x, y: player.y })
+    JSON.stringify({ kind: "initialize", x: player.x, y: player.y })
   );
+  movable = true;
 });
 
 game.sprites.push(player);
@@ -135,15 +128,19 @@ game.tasks.push(() => {
     player.x = window.innerWidth;
   }
 
-  if (connection.readyState === WebSocket.OPEN) {
-    connection.send(
-      JSON.stringify({ kind: "move", x: player.x, y: player.y, id })
-    );
+  if (movable) {
+    connection.send(JSON.stringify({ kind: "move", x: player.x, y: player.y }));
+  }
+});
+
+game.tasks.push(() => {
+  for (const thing of Object.values(players)) {
+    thing.render(game.context);
   }
 });
 
 window.addEventListener("beforeunload", () => {
-  connection.send(JSON.stringify({ kind: "dead", id }));
+  connection.send(JSON.stringify({ kind: "remove" }));
 });
 
 game.play();
