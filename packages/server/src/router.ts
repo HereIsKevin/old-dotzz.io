@@ -15,9 +15,11 @@ interface Route {
 
 class Router {
   private tree: Route;
+  private staticCache: Record<string, Buffer>;
 
   public constructor() {
     this.tree = { children: {} };
+    this.staticCache = {};
   }
 
   public route(route: string, handler: Handler) {
@@ -58,7 +60,17 @@ class Router {
         mime.getType(filePath) ?? "text/plain"
       );
       response.writeHead(200);
-      response.end(await fs.readFile(filePath));
+
+      const cached = this.staticCache[filePath];
+
+      if (typeof cached === "undefined") {
+        const value = await fs.readFile(filePath);
+        this.staticCache[filePath] = value;
+
+        response.end(value);
+      } else {
+        response.end(cached)
+      }
     });
   }
 
