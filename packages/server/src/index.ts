@@ -1,12 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
 
+import { Arena, Movement } from "./arena.js";
 import { Router } from "./router.js";
 import { Server } from "./server.js";
 
 interface DotZZConfig {
   port: number;
   host: string;
+  timeout: number;
 }
 
 interface Player {
@@ -14,99 +16,117 @@ interface Player {
   y: number;
 }
 
-const dotzzConfig = { port: 8000, host: "localhost" };
+const dotzzConfig = { port: 8000, host: "localhost", timeout: 60000 };
 
 class DotZZ {
   private server: Server;
   private router: Router;
   private socket: WebSocket.Server;
+  private arena: Arena;
   private config: DotZZConfig;
   private connectionIds: WeakMap<WebSocket, string>;
-  private players: Record<string, Player>;
 
   public constructor({
     port = 8000,
     host = "localhost",
+    timeout = 60000
   }: DotZZConfig = dotzzConfig) {
     this.server = new Server();
     this.router = new Router();
     this.socket = new WebSocket.Server({ server: this.server.server });
-    this.config = { port, host };
-    this.connectionIds = new WeakMap();
-    this.players = {};
+    this.arena = new Arena();
+    this.config = { port, host, timeout };
+    this.connectionIds = new Map();
 
     this.routeStatic();
   }
 
-  private routeStatic() {
+  private routeStatic(): void {
     this.router.routeStaticFile("/", "../client/index.html");
     this.router.routeStaticFile("/index.css", "../client/index.css");
     this.router.routeStaticDirectory("/build/", "../client/build/");
   }
 
-  private initializePlayer(id: string, x: number, y: number): void {
-    // initialize other players on current client
+  private sendToOthers(connecion: WebSocket, message: string): void {
+    for (const client of this.socket.clients) {
+      if (client !== connecion) {
+        client.send(message);
+      }
+    }
   }
 
-  public listen() {
-    this.socket.on("connection", (connection, request) => {
-      if (!this.connectionIds.has(connection)) {
-        this.connectionIds.set(connection, uuidv4());
+  private sendToAll(message: string): void {
+    for (const client of this.socket.clients) {
+      client.send(message);
+    }
+  }
+
+  private initializePlayer(connection: WebSocket): void {
+    // create a new player and initialize it
+    const connectionId = this.arena.addPlayer(0, 0);
+    this.connectionIds.set(connection, connectionId);
+
+    // iterate through all players
+    for (const [id, location] of Object.entries(this.arena.players)) {
+      // make sure the player is not the current connection
+      if (id !== connectionId) {
+        // send the player data to the connection
+        connection.send(JSON.stringify({ kind: "add", id, ...location }));
       }
+    }
+
+    this.sendToAll(
+      JSON.stringify({ kind: "add", id: connectionId, x: 0, y: 0 })
+    );
+  }
+
+  private movePlayer(connection: WebSocket, message: Movement): void {
+    const connectionId = this.connectionIds.get(connection);
+
+    if (typeof connectionId === "undefined") {
+      return;
+    }
+
+    const position = this.arena.movePlayer(connectionId, message);
+
+    this.sendToAll(
+      JSON.stringify({ kind: "move", id: connectionId, ...position })
+    );
+  }
+
+  private removePlayer(connection: WebSocket): void {
+    const connectionId = this.connectionIds.get(connection);
+
+    if (typeof connectionId === "undefined") {
+      return;
+    }
+
+    this.sendToAll(JSON.stringify({ kind: "remove", id: connectionId }));
+    this.arena.removePlayer(connectionId);
+    this.connectionIds.delete(connection);
+  }
+
+  public listen(): void {
+    this.socket.on("connection", (connection, request) => {
+      // current connection has not been initialized
+      if (!this.connectionIds.has(connection)) {
+        this.initializePlayer(connection);
+      }
+
+      connection.on("close", () => {
+        this.removePlayer(connection);
+      });
 
       connection.on("message", (message) => {
         const data = JSON.parse(String(message));
-        const connectionId = this.connectionIds.get(connection) as string;
 
-        if (data.kind === "initialize") {
-          // console.log("initialize", data);
-
-          for (const [id, location] of Object.entries(this.players)) {
-            connection.send(JSON.stringify({ kind: "add", id, ...location }));
-          }
-
-          this.players[connectionId] = { x: data.x, y: data.y };
-
-          const response = JSON.stringify({
-            kind: "add",
-            id: connectionId,
-            ...this.players[connectionId],
+        if (data.kind === "move") {
+          this.movePlayer(connection, {
+            left: data.left,
+            right: data.right,
+            up: data.up,
+            down: data.down,
           });
-
-          for (const client of this.socket.clients.values()) {
-            if (client !== connection) {
-              client.send(response);
-            }
-          }
-        } else if (data.kind === "move") {
-          // console.log("move", data);
-
-          this.players[connectionId] = { x: data.x, y: data.y };
-
-          const response = JSON.stringify({
-            kind: "move",
-            id: connectionId,
-            ...this.players[connectionId],
-          });
-
-          for (const client of this.socket.clients.values()) {
-            if (client !== connection) {
-              client.send(response);
-            }
-          }
-        } else if (data.kind === "remove") {
-          // console.log("remove", data);
-
-          const response = JSON.stringify({ kind: "remove", id: connectionId });
-
-          for (const client of this.socket.clients.values()) {
-            if (client !== connection) {
-              client.send(response);
-            }
-          }
-
-          delete this.players[connectionId];
-          this.connectionIds.delete(connection);
         }
       });
     });
@@ -114,6 +134,7 @@ class DotZZ {
     this.server.use(async (request, response) =>
       this.router.handle(request, response)
     );
+
     this.server.use(async (request, response) => {
       response.writeHead(404);
       response.end("404 Not Found");
