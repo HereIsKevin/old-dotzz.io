@@ -11,8 +11,8 @@ interface EventMap {
 };
 
 class Game {
-  private canvas: HTMLCanvasElement;
-  private context: CanvasRenderingContext2D;
+  public canvas: HTMLCanvasElement;
+  public context: CanvasRenderingContext2D;
 
   public sprites: Sprite[];
   public tasks: (() => void)[];
