@@ -30,8 +30,8 @@ interface ArenaConfig {
 }
 
 const arenaConfig = {
-  width: 10000,
-  height: 10000,
+  width: 1000,
+  height: 1000,
   velocityIncrease: 0.4,
   velocityDecrease: 0.1,
   maxVelocity: 4,
