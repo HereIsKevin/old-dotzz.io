@@ -1,12 +1,5 @@
 export { BorderSprite, Sprite, PlayerSprite };
 
-function randint(min: number, max: number) {
-  const roundedMin = Math.ceil(min);
-  const roundedMax = Math.floor(max);
-
-  return Math.floor(Math.random() * (roundedMax - roundedMin)) + roundedMin;
-}
-
 function circle(
   context: CanvasRenderingContext2D,
   x: number,
