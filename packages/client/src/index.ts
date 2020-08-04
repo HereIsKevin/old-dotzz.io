@@ -1,5 +1,5 @@
 import { Game } from "./game.js";
-import { PlayerSprite } from "./sprites.js";
+import { BorderSprite, PlayerSprite } from "./sprites.js";
 
 interface Player {
   x: number;
@@ -92,6 +92,46 @@ connection.addEventListener("open", (event) => {
       })
     );
   });
+
+  game.tasks.push(() => {
+    const currentPlayer = players[id];
+
+    const originX = target.width / 2;
+    const originY = target.height / 2;
+
+    const borderLeft = new BorderSprite(0, 0);
+
+    borderLeft.x = originX + (0 - currentPlayer.x);
+    borderLeft.y = originY + (0 - currentPlayer.y);
+    borderLeft.direction = "left";
+    borderLeft.target = target;
+
+    const borderRight = new BorderSprite(0, 0);
+
+    borderRight.x = originX + (1000 - currentPlayer.x);
+    borderRight.y = originY + (0 - currentPlayer.y);
+    borderRight.direction = "right";
+    borderRight.target = target;
+
+    const borderUp = new BorderSprite(0, 0);
+
+    borderUp.x = originX + (0 - currentPlayer.x);
+    borderUp.y = originY + (0 - currentPlayer.y);
+    borderUp.direction = "up";
+    borderUp.target = target;
+
+    const borderDown = new BorderSprite(0, 0);
+
+    borderDown.x = originX + (0 - currentPlayer.x);
+    borderDown.y = originY + (1000 - currentPlayer.y);
+    borderDown.direction = "down";
+    borderDown.target = target;
+
+    borderLeft.render(game.context);
+    borderRight.render(game.context);
+    borderUp.render(game.context);
+    borderDown.render(game.context);
+  })
 
   game.tasks.push(() => {
     const currentPlayer = players[id];
