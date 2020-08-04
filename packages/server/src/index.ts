@@ -67,8 +67,11 @@ class DotZZ {
   }
 
   private initializePlayer(connection: WebSocket): void {
+    const x = randint(0, this.arena.config.width);
+    const y = randint(0, this.arena.config.height);
+
     // create a new player and initialize it
-    const connectionId = this.arena.addPlayer(0, 0);
+    const connectionId = this.arena.addPlayer(x, y);
     this.connectionIds.set(connection, connectionId);
 
     // iterate through all players
@@ -84,8 +87,8 @@ class DotZZ {
       JSON.stringify({
         kind: "add",
         id: connectionId,
-        x: randint(0, this.arena.config.width),
-        y: randint(0, this.arena.config.width),
+        x,
+        y,
       })
     );
 
