@@ -15,7 +15,7 @@ interface Player {
   y: number;
 }
 
-const dotzzConfig = { port: 8000, host: "localhost" };
+const dotzzConfig = { port: 8000, host: "192.168.1.196" };
 
 function randint(min: number, max: number) {
   const roundedMin = Math.ceil(min);
@@ -50,14 +50,6 @@ class DotZZ {
     this.router.routeStaticFile("/", "../client/index.html");
     this.router.routeStaticFile("/index.css", "../client/index.css");
     this.router.routeStaticDirectory("/build/", "../client/build/");
-  }
-
-  private sendToOthers(connecion: WebSocket, message: string): void {
-    for (const client of this.socket.clients) {
-      if (client !== connecion) {
-        client.send(message);
-      }
-    }
   }
 
   private sendToAll(message: string): void {
