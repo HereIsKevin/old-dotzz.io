@@ -4,6 +4,10 @@ import { BorderSprite, PlayerSprite } from "./sprites.js";
 interface Player {
   x: number;
   y: number;
+  oldX: number;
+  oldY: number;
+  newX: number;
+  newY: number;
 }
 
 const target = document.getElementById("main");
@@ -14,7 +18,7 @@ if (target === null || !(target instanceof HTMLCanvasElement)) {
 
 const game = new Game(target);
 
-const connection = new WebSocket("ws://localhost:8000/");
+const connection = new WebSocket("ws://192.168.1.196:8000/");
 const players: Record<string, Player> = {};
 const sprites: WeakMap<Player, PlayerSprite> = new WeakMap();
 
@@ -65,13 +69,24 @@ connection.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
 
   if (data.kind === "add") {
-    players[data.id] = { x: data.x, y: data.y };
+    players[data.id] = {
+      x: data.x,
+      y: data.y,
+      oldX: data.x,
+      oldY: data.y,
+      newX: data.x,
+      newY: data.y,
+    };
   } else if (data.kind === "move") {
     const current = players[data.id];
 
     if (typeof current !== "undefined") {
-      current.x = data.x;
-      current.y = data.y;
+      current.x = current.oldX;
+      current.y = current.oldY;
+      current.oldX = current.newX;
+      current.oldY = current.newY;
+      current.newX = data.x;
+      current.newY = data.y;
     }
   } else if (data.kind === "remove") {
     delete players[data.id];
@@ -80,21 +95,25 @@ connection.addEventListener("message", (event) => {
   }
 });
 
+window.setInterval(() => {
+  connection.send(
+    JSON.stringify({
+      kind: "move",
+      left: keys.left,
+      right: keys.right,
+      up: keys.up,
+      down: keys.down,
+    })
+  );
+}, 10);
+
 connection.addEventListener("open", (event) => {
   game.tasks.push(() => {
-    connection.send(
-      JSON.stringify({
-        kind: "move",
-        left: keys.left,
-        right: keys.right,
-        up: keys.up,
-        down: keys.down,
-      })
-    );
-  });
-
-  game.tasks.push(() => {
     const currentPlayer = players[id];
+
+    if (typeof currentPlayer === "undefined") {
+      return;
+    }
 
     const originX = target.width / 2;
     const originY = target.height / 2;
@@ -131,10 +150,14 @@ connection.addEventListener("open", (event) => {
     borderRight.render(game.context);
     borderUp.render(game.context);
     borderDown.render(game.context);
-  })
+  });
 
   game.tasks.push(() => {
     const currentPlayer = players[id];
+
+    if (typeof currentPlayer === "undefined") {
+      return;
+    }
 
     const originX = target.width / 2;
     const originY = target.height / 2;
@@ -151,6 +174,27 @@ connection.addEventListener("open", (event) => {
         sprite.current = true;
       } else {
         sprite.current = false;
+      }
+
+      player.x = player.newX - player.oldX + player.x;
+      player.y = player.newY - player.oldY + player.y;
+
+      console.log(player.x, player.y);
+
+      if (player.x < 0) {
+        player.x = 0;
+      }
+
+      if (player.x > 1000) {
+        player.x = 1000;
+      }
+
+      if (player.y < 0) {
+        player.y = 0;
+      }
+
+      if (player.y > 1000) {
+        player.y = 1000;
       }
 
       sprite.x = originX + (player.x - currentPlayer.x);
