@@ -17,6 +17,13 @@ interface Player {
 
 const dotzzConfig = { port: 8000, host: "localhost" };
 
+function randint(min: number, max: number) {
+  const roundedMin = Math.ceil(min);
+  const roundedMax = Math.floor(max);
+
+  return Math.floor(Math.random() * (roundedMax - roundedMin)) + roundedMin;
+}
+
 class DotZZ {
   private server: Server;
   private router: Router;
@@ -74,7 +81,12 @@ class DotZZ {
     }
 
     this.sendToAll(
-      JSON.stringify({ kind: "add", id: connectionId, x: 0, y: 0 })
+      JSON.stringify({
+        kind: "add",
+        id: connectionId,
+        x: randint(0, this.arena.config.width),
+        y: randint(0, this.arena.config.width),
+      })
     );
 
     connection.send(JSON.stringify({ kind: "id", id: connectionId }));
