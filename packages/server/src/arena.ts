@@ -39,7 +39,7 @@ const arenaConfig = {
 
 class Arena {
   public players: Record<string, Player>;
-  private config: ArenaConfig;
+  public config: ArenaConfig;
 
   public constructor(config: ArenaConfig = arenaConfig) {
     this.players = {};
