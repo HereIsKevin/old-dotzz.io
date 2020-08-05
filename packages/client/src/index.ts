@@ -4,10 +4,6 @@ import { BorderSprite, PlayerSprite } from "./sprites.js";
 interface Player {
   x: number;
   y: number;
-  oldX: number;
-  oldY: number;
-  newX: number;
-  newY: number;
 }
 
 const target = document.getElementById("main");
@@ -72,21 +68,13 @@ connection.addEventListener("message", (event) => {
     players[data.id] = {
       x: data.x,
       y: data.y,
-      oldX: data.x,
-      oldY: data.y,
-      newX: data.x,
-      newY: data.y,
     };
   } else if (data.kind === "move") {
     const current = players[data.id];
 
     if (typeof current !== "undefined") {
-      current.x = current.oldX;
-      current.y = current.oldY;
-      current.oldX = current.newX;
-      current.oldY = current.newY;
-      current.newX = data.x;
-      current.newY = data.y;
+      current.x = data.x;
+      current.y = data.y;
     }
   } else if (data.kind === "remove") {
     delete players[data.id];
@@ -95,19 +83,19 @@ connection.addEventListener("message", (event) => {
   }
 });
 
-window.setInterval(() => {
-  connection.send(
-    JSON.stringify({
-      kind: "move",
-      left: keys.left,
-      right: keys.right,
-      up: keys.up,
-      down: keys.down,
-    })
-  );
-}, 10);
-
 connection.addEventListener("open", (event) => {
+  game.tasks.push(() => {
+    connection.send(
+      JSON.stringify({
+        kind: "move",
+        left: keys.left,
+        right: keys.right,
+        up: keys.up,
+        down: keys.down,
+      })
+    );
+  });
+
   game.tasks.push(() => {
     const currentPlayer = players[id];
 
@@ -175,11 +163,6 @@ connection.addEventListener("open", (event) => {
       } else {
         sprite.current = false;
       }
-
-      player.x = player.newX - player.oldX + player.x;
-      player.y = player.newY - player.oldY + player.y;
-
-      console.log(player.x, player.y);
 
       if (player.x < 0) {
         player.x = 0;
