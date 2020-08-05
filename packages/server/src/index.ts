@@ -32,15 +32,14 @@ class DotZZ {
   private config: DotZZConfig;
   private connectionIds: WeakMap<WebSocket, string>;
 
-  public constructor({
-    port = 8000,
-    host = "localhost",
-  }: DotZZConfig = dotzzConfig) {
+  public constructor(config: DotZZConfig = dotzzConfig) {
     this.server = new Server();
     this.router = new Router();
     this.socket = new WebSocket.Server({ server: this.server.server });
+
     this.arena = new Arena();
-    this.config = { port, host };
+
+    this.config = { ...dotzzConfig, ...config };
     this.connectionIds = new WeakMap();
 
     this.routeStatic();
