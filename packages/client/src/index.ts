@@ -4,6 +4,16 @@ import { BorderSprite, PlayerSprite } from "./sprites.js";
 interface Player {
   x: number;
   y: number;
+  velocityX: number;
+  velocityY: number;
+  movement: Movement;
+}
+
+interface Movement {
+  left: boolean;
+  right: boolean;
+  up: boolean;
+  down: boolean;
 }
 
 interface DotZZConfig {
@@ -11,6 +21,10 @@ interface DotZZConfig {
   port: number;
   width: number;
   height: number;
+  velocityIncrease: number;
+  velocityDecrease: number;
+  maxVelocity: number;
+  moveInterval: number;
 }
 
 interface Keys {
@@ -25,6 +39,10 @@ const dotzzConfig = {
   host: "192.168.1.196",
   width: 1000,
   height: 1000,
+  velocityIncrease: 0.4,
+  velocityDecrease: 0.1,
+  maxVelocity: 4,
+  moveInterval: 1000 / 60,
 };
 
 class DotZZ {
@@ -122,9 +140,23 @@ class DotZZ {
       const data = JSON.parse(event.data);
 
       if (data.kind === "add") {
-        this.addPlayer(data.id, data.x, data.y);
+        this.addPlayer(
+          data.id,
+          data.x,
+          data.y,
+          data.velocityX,
+          data.velocityY,
+          data.movement
+        );
       } else if (data.kind === "move") {
-        this.movePlayer(data.id, data.x, data.y);
+        this.movePlayer(
+          data.id,
+          data.x,
+          data.y,
+          data.velocityX,
+          data.velocityY,
+          data.movement
+        );
       } else if (data.kind === "remove") {
         this.removePlayer(data.id);
       } else if (data.kind === "id") {
@@ -137,6 +169,61 @@ class DotZZ {
       this.game.tasks.push(() => this.renderBorders());
       this.game.tasks.push(() => this.renderSprites());
     });
+
+    window.setInterval(() => {
+      for (const player of Object.values(this.players)) {
+        // change x coordinate by current x velocity
+        player.x += player.velocityX;
+        // change y coordinate by current y velocity
+        player.y += player.velocityY;
+
+        const maxVelocity = this.config.maxVelocity;
+        const velocityIncrease = this.config.velocityIncrease;
+        const velocityDecrease = this.config.velocityDecrease;
+
+        if (player.movement.down && player.velocityY < maxVelocity) {
+          // increase y velocity when possible while moving down
+          player.velocityY += velocityIncrease;
+        } else if (player.movement.up && player.velocityY > -maxVelocity) {
+          // increase y velocity when possible while moving up
+          player.velocityY -= velocityIncrease;
+        } else if (player.velocityY < 0) {
+          // decrease y velocity when not moving up
+          player.velocityY += velocityDecrease;
+        } else if (player.velocityY > 0) {
+          // decrease y velocity when not moving down
+          player.velocityY -= velocityDecrease;
+        }
+
+        if (player.movement.right && player.velocityX < maxVelocity) {
+          // increase x velocity when possible while moving right
+          player.velocityX += velocityIncrease;
+        } else if (player.movement.left && player.velocityX > -maxVelocity) {
+          // increase x velocity when possible while moving left
+          player.velocityX -= velocityIncrease;
+        } else if (player.velocityX < 0) {
+          // decrease x velocity when not moving left
+          player.velocityX += velocityDecrease;
+        } else if (player.velocityX > 0) {
+          // decrease y velocity when not moving right
+          player.velocityX -= velocityDecrease;
+        }
+
+        // make sure y is within boundaries
+        if (player.y < 0) {
+          player.y = 0;
+        } else if (player.y > this.config.height) {
+          player.y = this.config.height;
+        }
+
+        // make sure x is within boundaries
+        if (player.x < 0) {
+          player.x = 0;
+        } else if (player.x > this.config.width) {
+          player.x = this.config.width;
+        }
+      }
+    }, this.config.moveInterval);
   }
 
   private reportMove(): void {
@@ -214,15 +301,32 @@ class DotZZ {
     }
   }
 
-  private addPlayer(id: string, x: number, y: number): void {
-    this.players[id] = { x, y };
+  private addPlayer(
+    id: string,
+    x: number,
+    y: number,
+    velocityX: number,
+    velocityY: number,
+    movement: Movement
+  ): void {
+    this.players[id] = { x, y, velocityX, velocityY, movement };
   }
 
-  private movePlayer(id: string, x: number, y: number): void {
+  private movePlayer(
+    id: string,
+    x: number,
+    y: number,
+    velocityX: number,
+    velocityY: number,
+    movement: Movement
+  ): void {
     const player = this.players[id];
 
     player.x = x;
     player.y = y;
+    player.velocityX = velocityX;
+    player.velocityY = velocityY;
+    player.movement = movement;
   }
 
   private removePlayer(id: string): void {
