@@ -55,6 +55,7 @@ class DotZZ {
   private borders: BorderSprite[];
   private keys: Keys;
   private id?: string;
+  private lastKeys: Movement;
 
   public constructor(
     target: HTMLCanvasElement,
@@ -106,6 +107,7 @@ class DotZZ {
     ];
 
     this.keys = { up: false, down: false, right: false, left: false };
+    this.lastKeys = { up: false, down: false, right: false, left: false };
     this.id = undefined;
 
     this.game.on("keydown", (event) => {
@@ -165,6 +167,7 @@ class DotZZ {
     });
 
     this.connection.addEventListener("open", () => {
+      this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
       this.game.tasks.push(() => this.reportMove());
       this.game.tasks.push(() => this.renderBorders());
       this.game.tasks.push(() => this.renderSprites());
@@ -172,6 +175,10 @@ class DotZZ {
 
     window.setInterval(() => {
       for (const player of Object.values(this.players)) {
+        if (typeof player.movement === "undefined") {
+          continue;
+        }
+
         // change x coordinate by current x velocity
         player.x += player.velocityX;
         // change y coordinate by current y velocity
@@ -227,7 +234,15 @@ class DotZZ {
   }
 
   private reportMove(): void {
-    this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
+    if (
+      this.lastKeys.down !== this.keys.down ||
+      this.lastKeys.up !== this.keys.up ||
+      this.lastKeys.right !== this.keys.right ||
+      this.lastKeys.left !== this.keys.left
+    ) {
+      this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
+      this.lastKeys = { ...this.keys };
+    }
   }
 
   private renderBorders(): void {
@@ -322,8 +337,18 @@ class DotZZ {
   ): void {
     const player = this.players[id];
 
-    player.x = x;
-    player.y = y;
+    if (Math.round(player.x) + 0.5 < Math.round(x)) {
+      player.x = player.x + 0.5;
+    } else if (Math.round(player.x) > Math.round(x) + 0.5) {
+      player.x = player.x - 0.5;
+    }
+
+    if (Math.round(player.y) + 0.5 < Math.round(y)) {
+      player.y = player.y + 0.5;
+    } else if (Math.round(player.y) > Math.round(y) + 0.5) {
+      player.y = player.y - 0.5;
+    }
+
     player.velocityX = velocityX;
     player.velocityY = velocityY;
     player.movement = movement;
