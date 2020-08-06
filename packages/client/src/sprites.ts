@@ -55,7 +55,7 @@ class BorderSprite extends Sprite {
     target: HTMLCanvasElement,
     direction: Direction,
     height: number,
-    width: number,
+    width: number
   ) {
     super(x, y);
 
