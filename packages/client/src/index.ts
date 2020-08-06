@@ -6,6 +6,8 @@ interface Player {
   y: number;
   velocityX: number;
   velocityY: number;
+  offX: number;
+  offY: number;
   movement: Movement;
 }
 
@@ -25,6 +27,7 @@ interface DotZZConfig {
   velocityDecrease: number;
   maxVelocity: number;
   moveInterval: number;
+  resolve: number;
 }
 
 interface Keys {
@@ -43,6 +46,7 @@ const dotzzConfig = {
   velocityDecrease: 0.1,
   maxVelocity: 4,
   moveInterval: 1000 / 60,
+  resolve: 1,
 };
 
 class DotZZ {
@@ -216,6 +220,32 @@ class DotZZ {
           player.velocityX -= velocityDecrease;
         }
 
+        const resolve = this.config.resolve
+
+        if (player.offX < resolve && player.offX > -resolve) {
+          player.x += player.offX;
+          player.offX = 0;
+        } else if (player.offX > resolve) {
+          player.x -= resolve;
+          player.offX -= resolve;
+        } else if (player.offX < -resolve) {
+          player.x += resolve;
+          player.offX += resolve;
+        }
+
+        if (player.offY < resolve && player.offY > -resolve) {
+          player.y += player.offY;
+          player.offY = 0;
+        } else if (player.offY > resolve) {
+          player.y -= resolve;
+          player.offY -= resolve;
+        } else if (player.offY < -resolve) {
+          player.y += resolve;
+          player.offY += resolve;
+        }
+
+        console.log(player.offX, player.offY);
+
         // make sure y is within boundaries
         if (player.y < 0) {
           player.y = 0;
@@ -324,7 +354,7 @@ class DotZZ {
     velocityY: number,
     movement: Movement
   ): void {
-    this.players[id] = { x, y, velocityX, velocityY, movement };
+    this.players[id] = { x, y, velocityX, velocityY, offX: 0, offY: 0, movement };
   }
 
   private movePlayer(
@@ -337,18 +367,8 @@ class DotZZ {
   ): void {
     const player = this.players[id];
 
-    if (Math.round(player.x) + 0.5 < Math.round(x)) {
-      player.x = player.x + 0.5;
-    } else if (Math.round(player.x) > Math.round(x) + 0.5) {
-      player.x = player.x - 0.5;
-    }
-
-    if (Math.round(player.y) + 0.5 < Math.round(y)) {
-      player.y = player.y + 0.5;
-    } else if (Math.round(player.y) > Math.round(y) + 0.5) {
-      player.y = player.y - 0.5;
-    }
-
+    player.offX = player.x - x;
+    player.offY = player.y - y;
     player.velocityX = velocityX;
     player.velocityY = velocityY;
     player.movement = movement;
