@@ -1,5 +1,7 @@
 export { BorderSprite, Sprite, PlayerSprite };
 
+type Direction = "left" | "right" | "up" | "down";
+
 function circle(
   context: CanvasRenderingContext2D,
   x: number,
@@ -42,49 +44,56 @@ class PlayerSprite extends Sprite {
 }
 
 class BorderSprite extends Sprite {
-  public direction: "left" | "right" | "up" | "down";
-  public target?: HTMLCanvasElement;
+  public direction: Direction;
+  public target: HTMLCanvasElement;
+  public height: number;
+  public width: number;
 
-  public constructor(x: number, y: number) {
+  public constructor(
+    x: number,
+    y: number,
+    target: HTMLCanvasElement,
+    direction: Direction,
+    height: number,
+    width: number,
+  ) {
     super(x, y);
 
-    this.direction = "left";
-    this.target = undefined;
+    this.direction = direction;
+    this.target = target;
+    this.height = height;
+    this.width = width;
   }
 
   public render(context: CanvasRenderingContext2D): void {
     context.fillStyle = "rgb(221, 221, 221)";
-
-    if (typeof this.target === "undefined") {
-      return;
-    }
 
     if (this.direction === "left") {
       context.fillRect(
         this.x - this.target.width,
         this.y - this.target.height,
         this.target.width,
-        1000 + (this.target.height * 2)
+        this.height + this.target.height * 2
       );
     } else if (this.direction === "right") {
       context.fillRect(
         this.x,
         this.y - this.target.height,
         this.target.width,
-        1000 + (this.target.height * 2)
+        this.height + this.target.height * 2
       );
     } else if (this.direction === "up") {
       context.fillRect(
         this.x - this.target.width,
         this.y - this.target.height,
-        1000 + (this.target.width * 2),
+        this.width + this.target.width * 2,
         this.target.height
       );
     } else if (this.direction === "down") {
       context.fillRect(
         this.x - this.target.width,
         this.y,
-        1000 + (this.target.width * 2),
+        this.width + this.target.width * 2,
         this.target.height
       );
     }
