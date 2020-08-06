@@ -1,4 +1,4 @@
-export { Arena, ArenaConfig, Movement, Player, Position };
+export { Arena, ArenaConfig, Movement, Player };
 
 import { v4 as uuidv4 } from "uuid";
 
@@ -8,11 +8,6 @@ interface Player {
   velocityX: number;
   velocityY: number;
   movement: Movement;
-}
-
-interface Position {
-  x: number;
-  y: number;
 }
 
 interface Movement {
@@ -122,10 +117,10 @@ class Arena {
     delete this.players[id];
   }
 
-  public movePlayer(id: string, movement: Movement): Position {
+  public movePlayer(id: string, movement: Movement): Player {
     const player = this.players[id];
     player.movement = movement;
 
-    return { x: player.x, y: player.y };
+    return player;
   }
 }
