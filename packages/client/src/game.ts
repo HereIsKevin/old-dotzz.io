@@ -1,7 +1,5 @@
 export { Game };
 
-import { Sprite } from "./sprites.js";
-
 const keyEvents = ["keydown", "keyup"];
 
 interface EventMap {
@@ -14,7 +12,6 @@ class Game {
   public canvas: HTMLCanvasElement;
   public context: CanvasRenderingContext2D;
 
-  public sprites: Sprite[];
   public tasks: (() => void)[];
 
   public constructor(canvas: HTMLCanvasElement) {
@@ -37,9 +34,6 @@ class Game {
       this.canvas.width = window.innerWidth;
       this.canvas.height = window.innerHeight;
     });
-
-    // setup sprites
-    this.sprites = [];
 
     // setup tasks
     this.tasks = [];
@@ -66,11 +60,6 @@ class Game {
     // run all tasks
     for (const task of this.tasks) {
       task();
-    }
-
-    // render all sprites
-    for (const sprite of this.sprites) {
-      sprite.render(this.context);
     }
 
     // prepare for next frame
