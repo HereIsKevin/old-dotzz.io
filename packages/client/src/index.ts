@@ -6,156 +6,187 @@ interface Player {
   y: number;
 }
 
-const target = document.getElementById("main");
-
-if (target === null || !(target instanceof HTMLCanvasElement)) {
-  throw new Error("canvas is missing");
+interface DotZZConfig {
+  host: string;
+  port: number;
+  width: number;
+  height: number;
 }
 
-const game = new Game(target);
+interface Keys {
+  up: boolean;
+  down: boolean;
+  right: boolean;
+  left: boolean;
+}
 
-const connection = new WebSocket("ws://192.168.1.196:8000/");
-const players: Record<string, Player> = {};
-const sprites: WeakMap<Player, PlayerSprite> = new WeakMap();
-
-let id: string;
-
-const keys = {
-  up: false,
-  down: false,
-  right: false,
-  left: false,
+const dotzzConfig = {
+  port: 8000,
+  host: "192.168.1.196",
+  width: 1000,
+  height: 1000,
 };
 
-game.on("keydown", (event: Event) => {
-  switch ((event as KeyboardEvent).key) {
-    case "ArrowUp":
-      keys.up = true;
-      break;
-    case "ArrowDown":
-      keys.down = true;
-      break;
-    case "ArrowRight":
-      keys.right = true;
-      break;
-    case "ArrowLeft":
-      keys.left = true;
-      break;
-  }
-});
+class DotZZ {
+  private target: HTMLCanvasElement;
+  private config: DotZZConfig;
+  private game: Game;
+  private connection: WebSocket;
+  private players: Record<string, Player>;
+  private sprites: WeakMap<Player, PlayerSprite>;
+  private borders: BorderSprite[];
+  private keys: Keys;
+  private id?: string;
 
-game.on("keyup", (event: Event) => {
-  switch ((event as KeyboardEvent).key) {
-    case "ArrowUp":
-      keys.up = false;
-      break;
-    case "ArrowDown":
-      keys.down = false;
-      break;
-    case "ArrowRight":
-      keys.right = false;
-      break;
-    case "ArrowLeft":
-      keys.left = false;
-      break;
-  }
-});
+  public constructor(
+    target: HTMLCanvasElement,
+    config: DotZZConfig = dotzzConfig
+  ) {
+    this.target = target;
+    this.config = config;
 
-connection.addEventListener("message", (event) => {
-  const data = JSON.parse(event.data);
-
-  if (data.kind === "add") {
-    players[data.id] = {
-      x: data.x,
-      y: data.y,
-    };
-  } else if (data.kind === "move") {
-    const current = players[data.id];
-
-    if (typeof current !== "undefined") {
-      current.x = data.x;
-      current.y = data.y;
-    }
-  } else if (data.kind === "remove") {
-    delete players[data.id];
-  } else if (data.kind === "id") {
-    id = data.id;
-  }
-});
-
-connection.addEventListener("open", (event) => {
-  game.tasks.push(() => {
-    connection.send(
-      JSON.stringify({
-        kind: "move",
-        left: keys.left,
-        right: keys.right,
-        up: keys.up,
-        down: keys.down,
-      })
+    this.game = new Game(this.target);
+    this.connection = new WebSocket(
+      `ws://${this.config.host}:${this.config.port}`
     );
-  });
 
-  game.tasks.push(() => {
-    const currentPlayer = players[id];
+    this.players = {};
+    this.sprites = new WeakMap();
+    this.borders = [
+      new BorderSprite(
+        0,
+        0,
+        this.target,
+        "left",
+        this.config.height,
+        this.config.width
+      ),
+      new BorderSprite(
+        0,
+        0,
+        this.target,
+        "right",
+        this.config.height,
+        this.config.width
+      ),
+      new BorderSprite(
+        0,
+        0,
+        this.target,
+        "up",
+        this.config.height,
+        this.config.width
+      ),
+      new BorderSprite(
+        0,
+        0,
+        this.target,
+        "down",
+        this.config.height,
+        this.config.width
+      ),
+    ];
 
-    if (typeof currentPlayer === "undefined") {
+    this.keys = { up: false, down: false, right: false, left: false };
+    this.id = undefined;
+
+    this.game.on("keydown", (event) => {
+      const key = event.key;
+
+      if (key === "ArrowUp") {
+        this.keys.up = true;
+      } else if (key === "ArrowDown") {
+        this.keys.down = true;
+      } else if (key === "ArrowRight") {
+        this.keys.right = true;
+      } else if (key === "ArrowLeft") {
+        this.keys.left = true;
+      }
+    });
+
+    this.game.on("keyup", (event) => {
+      const key = event.key;
+
+      if (key === "ArrowUp") {
+        this.keys.up = false;
+      } else if (key === "ArrowDown") {
+        this.keys.down = false;
+      } else if (key === "ArrowRight") {
+        this.keys.right = false;
+      } else if (key === "ArrowLeft") {
+        this.keys.left = false;
+      }
+    });
+
+    this.connection.addEventListener("message", (event) => {
+      const data = JSON.parse(event.data);
+
+      if (data.kind === "add") {
+        this.addPlayer(data.id, data.x, data.y);
+      } else if (data.kind === "move") {
+        this.movePlayer(data.id, data.x, data.y);
+      } else if (data.kind === "remove") {
+        this.removePlayer(data.id);
+      } else if (data.kind === "id") {
+        this.id = data.id;
+      }
+    });
+
+    this.connection.addEventListener("open", () => {
+      this.game.tasks.push(() => this.reportMove());
+      this.game.tasks.push(() => this.renderBorders());
+      this.game.tasks.push(() => this.renderSprites());
+    });
+  }
+
+  private reportMove(): void {
+    this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
+  }
+
+  private renderBorders(): void {
+    if (typeof this.id === "undefined") {
       return;
     }
 
-    const originX = target.width / 2;
-    const originY = target.height / 2;
+    const currentPlayer = this.players[this.id];
 
-    const borderLeft = new BorderSprite(0, 0);
+    const originX = this.target.width / 2;
+    const originY = this.target.height / 2;
 
-    borderLeft.x = originX + (0 - currentPlayer.x);
-    borderLeft.y = originY + (0 - currentPlayer.y);
-    borderLeft.direction = "left";
-    borderLeft.target = target;
+    this.borders[0].x = originX + (0 - currentPlayer.x);
+    this.borders[0].y = originY + (0 - currentPlayer.y);
 
-    const borderRight = new BorderSprite(0, 0);
+    this.borders[1].x = originX + (1000 - currentPlayer.x);
+    this.borders[1].y = originY + (0 - currentPlayer.y);
 
-    borderRight.x = originX + (1000 - currentPlayer.x);
-    borderRight.y = originY + (0 - currentPlayer.y);
-    borderRight.direction = "right";
-    borderRight.target = target;
+    this.borders[2].x = originX + (0 - currentPlayer.x);
+    this.borders[2].y = originY + (0 - currentPlayer.y);
 
-    const borderUp = new BorderSprite(0, 0);
+    this.borders[3].x = originX + (0 - currentPlayer.x);
+    this.borders[3].y = originY + (1000 - currentPlayer.y);
 
-    borderUp.x = originX + (0 - currentPlayer.x);
-    borderUp.y = originY + (0 - currentPlayer.y);
-    borderUp.direction = "up";
-    borderUp.target = target;
+    this.borders[0].render(this.game.context);
+    this.borders[1].render(this.game.context);
+    this.borders[2].render(this.game.context);
+    this.borders[3].render(this.game.context);
+  }
 
-    const borderDown = new BorderSprite(0, 0);
-
-    borderDown.x = originX + (0 - currentPlayer.x);
-    borderDown.y = originY + (1000 - currentPlayer.y);
-    borderDown.direction = "down";
-    borderDown.target = target;
-
-    borderLeft.render(game.context);
-    borderRight.render(game.context);
-    borderUp.render(game.context);
-    borderDown.render(game.context);
-  });
-
-  game.tasks.push(() => {
-    const currentPlayer = players[id];
-
-    if (typeof currentPlayer === "undefined") {
+  private renderSprites(): void {
+    if (typeof this.id === "undefined") {
       return;
     }
 
-    const originX = target.width / 2;
-    const originY = target.height / 2;
+    const currentPlayer = this.players[this.id];
 
-    for (const [id, player] of Object.entries(players)) {
-      let sprite = sprites.get(player);
+    const originX = this.target.width / 2;
+    const originY = this.target.height / 2;
+
+    for (const player of Object.values(this.players)) {
+      let sprite = this.sprites.get(player);
 
       if (typeof sprite === "undefined") {
         sprite = new PlayerSprite(0, 0);
-        sprites.set(player, sprite);
+        this.sprites.set(player, sprite);
       }
 
       if (player === currentPlayer) {
@@ -166,26 +197,51 @@ connection.addEventListener("open", (event) => {
 
       if (player.x < 0) {
         player.x = 0;
-      }
-
-      if (player.x > 1000) {
-        player.x = 1000;
+      } else if (player.x > this.config.width) {
+        player.x = this.config.width;
       }
 
       if (player.y < 0) {
         player.y = 0;
-      }
-
-      if (player.y > 1000) {
-        player.y = 1000;
+      } else if (player.y > this.config.height) {
+        player.y = this.config.height;
       }
 
       sprite.x = originX + (player.x - currentPlayer.x);
       sprite.y = originY + (player.y - currentPlayer.y);
 
-      sprite.render(game.context);
+      sprite.render(this.game.context);
     }
-  });
-});
+  }
 
-game.play();
+  private addPlayer(id: string, x: number, y: number): void {
+    this.players[id] = { x, y };
+  }
+
+  private movePlayer(id: string, x: number, y: number): void {
+    const player = this.players[id];
+
+    player.x = x;
+    player.y = y;
+  }
+
+  private removePlayer(id: string): void {
+    delete this.players[id];
+  }
+
+  public run(): void {
+    this.game.play();
+  }
+}
+
+let target = document.getElementById("main");
+
+if (target === null) {
+  target = new HTMLCanvasElement();
+  target.id = "main";
+
+  document.body.prepend(target);
+}
+
+const dotzz = new DotZZ(target as HTMLCanvasElement);
+dotzz.run();
