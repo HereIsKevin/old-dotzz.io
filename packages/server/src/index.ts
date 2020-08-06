@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import WebSocket from "ws";
 
 import { Arena, Movement } from "./arena.js";
@@ -8,11 +7,6 @@ import { Server } from "./server.js";
 interface DotZZConfig {
   port: number;
   host: string;
-}
-
-interface Player {
-  x: number;
-  y: number;
 }
 
 const dotzzConfig = { port: 8000, host: "192.168.1.196" };
@@ -93,10 +87,10 @@ class DotZZ {
       return;
     }
 
-    const position = this.arena.movePlayer(connectionId, message);
+    const player = this.arena.movePlayer(connectionId, message);
 
     this.sendToAll(
-      JSON.stringify({ kind: "move", id: connectionId, ...position })
+      JSON.stringify({ kind: "move", id: connectionId, ...player })
     );
   }
 
@@ -113,7 +107,7 @@ class DotZZ {
   }
 
   public listen(): void {
-    this.socket.on("connection", (connection, request) => {
+    this.socket.on("connection", (connection) => {
       // current connection has not been initialized
       if (!this.connectionIds.has(connection)) {
         this.initializePlayer(connection);
