@@ -1,9 +1,9 @@
 export { Route, Router };
 
-import * as fs from "fs/promises";
-import * as http from "http";
-import * as mime from "mime";
-import * as path from "path";
+import fs from "fs/promises";
+import http from "http";
+import mime from "mime";
+import path from "path";
 
 import { Handler } from "./server";
 
