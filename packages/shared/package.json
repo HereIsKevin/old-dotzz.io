@@ -1,0 +1,24 @@
+{
+  "name": "shared",
+  "version": "0.1.0",
+  "description": "Shared for dotzz.io",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch --preserveWatchOutput",
+    "clean": "shx rm -rf ./build/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HereIsKevin/dotzz.io.git"
+  },
+  "author": "Kevin Feng",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/HereIsKevin/dotzz.io/issues"
+  },
+  "homepage": "https://github.com/HereIsKevin/dotzz.io#readme",
+  "devDependencies": {
+    "shx": "^0.3.2",
+    "typescript": "^3.9.7"
+  }
+}
