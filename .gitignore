@@ -128,3 +128,6 @@ dist
 
 # Build output
 build/
+
+# VSCode configuration
+.vscode/
