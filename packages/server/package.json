@@ -4,6 +4,11 @@
   "version": "0.1.0",
   "description": "Server for dotzz.io",
   "main": "./build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch --preserveWatchOutput",
+    "clean": "shx rm -rf ./build/"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HereIsKevin/dotzz.io.git"
@@ -19,6 +24,7 @@
     "@types/node": "^14.0.27",
     "@types/uuid": "^8.0.0",
     "@types/ws": "^7.2.6",
+    "shx": "^0.3.2",
     "typescript": "^3.9.7"
   },
   "dependencies": {
