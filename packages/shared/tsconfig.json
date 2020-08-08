@@ -3,6 +3,7 @@
     "outDir": "./build/",
     "target": "es2017",
     "strict": true,
+    "declaration": true,
     "baseUrl": "./",
     "paths": {
       "shared/*": ["./src/*"]
