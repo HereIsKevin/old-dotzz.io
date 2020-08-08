@@ -1,5 +1,5 @@
-import { Game } from "./game.js";
-import { BorderSprite, PlayerSprite } from "./sprites.js";
+import { Game } from "./game";
+import { BorderSprite, PlayerSprite } from "./sprites";
 
 interface Player {
   x: number;
@@ -244,8 +244,6 @@ class DotZZ {
           player.offY += resolve;
         }
 
-        console.log(player.offX, player.offY);
-
         // make sure y is within boundaries
         if (player.y < 0) {
           player.y = 0;
@@ -304,44 +302,40 @@ class DotZZ {
   }
 
   private renderSprites(): void {
+    // do not render anything if the current player id is unknown
     if (typeof this.id === "undefined") {
       return;
     }
 
+    // fetch the current player based on the id
     const currentPlayer = this.players[this.id];
 
+    // origin is displayed at the center of the canvas
     const originX = this.target.width / 2;
     const originY = this.target.height / 2;
 
     for (const player of Object.values(this.players)) {
       let sprite = this.sprites.get(player);
 
+      // create new sprite if the current player does not have one
       if (typeof sprite === "undefined") {
         sprite = new PlayerSprite(0, 0);
         this.sprites.set(player, sprite);
       }
 
+      // mark as current if sprite is the current player
       if (player === currentPlayer) {
         sprite.current = true;
       } else {
         sprite.current = false;
       }
 
-      if (player.x < 0) {
-        player.x = 0;
-      } else if (player.x > this.config.width) {
-        player.x = this.config.width;
-      }
-
-      if (player.y < 0) {
-        player.y = 0;
-      } else if (player.y > this.config.height) {
-        player.y = this.config.height;
-      }
-
+      // 0 for x is x coordinate of the current player, then center visually
       sprite.x = originX + (player.x - currentPlayer.x);
+      // 0 for y is y coordinate of the current player, then center visually
       sprite.y = originY + (player.y - currentPlayer.y);
 
+      // render sprite on canvas
       sprite.render(this.game.context);
     }
   }
