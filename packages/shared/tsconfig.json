@@ -2,7 +2,11 @@
   "compilerOptions": {
     "outDir": "./build/",
     "target": "es2017",
-    "strict": true
+    "strict": true,
+    "baseUrl": "./",
+    "paths": {
+      "shared/*": ["./src/*"]
+    }
   },
   "include": ["./src/"]
 }

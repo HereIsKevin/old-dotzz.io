@@ -1,11 +1,18 @@
 {
   "name": "shared",
+  "type": "module",
   "version": "0.1.0",
   "description": "Shared for dotzz.io",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch --preserveWatchOutput",
     "clean": "shx rm -rf ./build/"
+  },
+  "exports": {
+    "./config": "./build/config.js",
+    "./config.js": "./build/config.js",
+    "./player": "./build/player.js",
+    "./player.js": "./build/player.js"
   },
   "repository": {
     "type": "git",
