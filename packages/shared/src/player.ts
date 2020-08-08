@@ -1,6 +1,6 @@
 export { Movement, Player, move, restrict };
 
-import { Config, defaultConfig } from "./config.js";
+import { Config, defaultConfig } from "shared/config";
 
 interface Movement {
   left: boolean;
