@@ -29,28 +29,11 @@
       ]
     },
     "module": true,
-    "reserved": [
-      "x",
-      "y",
-      "down",
-      "right",
-      "up",
-      "left",
-      "kind",
-      "id",
-      "velocityX",
-      "velocityY",
-      "offX",
-      "offY",
-      "movement"
-    ],
     "toplevel": true
   },
-  "output": {},
   "warnings": true,
   "module": true,
   "toplevel": true,
-  "nameCache": {},
   "keep_classnames": false,
   "keep_fnames": false
 }
