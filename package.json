@@ -1,8 +1,15 @@
 {
   "name": "dotzz.io",
+  "type": "module",
   "version": "0.1.0",
   "description": "Simple but addictive MMO game",
   "private": true,
+  "scripts": {
+    "format:check": "prettier --check ./*.json ./packages/*/*.{html,css,js,json} ./packages/*/src/*.ts",
+    "format:write": "prettier --write ./*.json ./packages/*/*.{html,css,js,json} ./packages/*/src/*.ts",
+    "lint:check": "eslint ./packages/*/src/*.ts",
+    "lint:fix": "eslint --fix ./packages/*/src/*.ts"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HereIsKevin/dotzz.io.git"
@@ -12,5 +19,12 @@
   "bugs": {
     "url": "https://github.com/HereIsKevin/dotzz.io/issues"
   },
-  "homepage": "https://github.com/HereIsKevin/dotzz.io#readme"
+  "homepage": "https://github.com/HereIsKevin/dotzz.io#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.8.0",
+    "@typescript-eslint/parser": "^3.8.0",
+    "eslint": "^7.6.0",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.7"
+  }
 }
