@@ -42,7 +42,7 @@ class DotZZ {
   private routeStatic(): void {
     this.router.routeStaticFile("/", "../client/index.html");
     this.router.routeStaticFile("/index.css", "../client/index.css");
-    this.router.routeStaticDirectory("/build/", "../client/build/");
+    this.router.routeStaticDirectory("/dist/", "../client/dist/");
   }
 
   private sendToAll(message: string): void {
