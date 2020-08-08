@@ -1,6 +1,56 @@
 {
-  "warnings": "verbose",
-  "mangle": true,
+  "compress": {
+    "conditionals": false,
+    "drop_console": true,
+    "ecma": 6,
+    "keep_fargs": false,
+    "module": true,
+    "passes": 3,
+    "toplevel": true,
+    "unsafe": true,
+    "warnings": true
+  },
+  "mangle": {
+    "properties": {
+      "reserved": [
+        "x",
+        "y",
+        "down",
+        "right",
+        "up",
+        "left",
+        "kind",
+        "id",
+        "velocityX",
+        "velocityY",
+        "offX",
+        "offY",
+        "movement"
+      ]
+    },
+    "module": true,
+    "reserved": [
+      "x",
+      "y",
+      "down",
+      "right",
+      "up",
+      "left",
+      "kind",
+      "id",
+      "velocityX",
+      "velocityY",
+      "offX",
+      "offY",
+      "movement"
+    ],
+    "toplevel": true
+  },
+  "output": {},
+  "warnings": true,
   "module": true,
-  "toplevel": true
+  "toplevel": true,
+  "nameCache": {},
+  "keep_classnames": false,
+  "keep_fnames": false
 }
