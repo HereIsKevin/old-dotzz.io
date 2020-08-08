@@ -1,6 +1,6 @@
 export { Handler, Server };
 
-import http from "http";
+import * as http from "http";
 
 type Handler = (
   request: http.IncomingMessage,
