@@ -68,7 +68,7 @@ class Router {
 
         response.end(value);
       } else {
-        response.end(cached)
+        response.end(cached);
       }
     });
   }

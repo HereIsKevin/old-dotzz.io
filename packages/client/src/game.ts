@@ -5,8 +5,8 @@ const keyEvents = ["keydown", "keyup"];
 interface EventMap {
   keydown: KeyboardEvent;
   keyup: KeyboardEvent;
-  [key: string]: Event,
-};
+  [key: string]: Event;
+}
 
 class Game {
   public canvas: HTMLCanvasElement;

@@ -220,7 +220,7 @@ class DotZZ {
           player.velocityX -= velocityDecrease;
         }
 
-        const resolve = this.config.resolve
+        const resolve = this.config.resolve;
 
         if (player.offX < resolve && player.offX > -resolve) {
           player.x += player.offX;
@@ -348,7 +348,15 @@ class DotZZ {
     velocityY: number,
     movement: Movement
   ): void {
-    this.players[id] = { x, y, velocityX, velocityY, offX: 0, offY: 0, movement };
+    this.players[id] = {
+      x,
+      y,
+      velocityX,
+      velocityY,
+      offX: 0,
+      offY: 0,
+      movement,
+    };
   }
 
   private movePlayer(

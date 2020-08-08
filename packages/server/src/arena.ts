@@ -52,7 +52,7 @@ class Arena {
 
         const maxVelocity = this.config.maxVelocity;
         const velocityIncrease = this.config.velocityIncrease;
-        const velocityDecrease = this.config.velocityDecrease
+        const velocityDecrease = this.config.velocityDecrease;
 
         if (player.movement.down && player.velocityY < maxVelocity) {
           // increase y velocity when possible while moving down
