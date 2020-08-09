@@ -1,17 +1,12 @@
 export { Arena };
 
-// shared configuration
 import { Config, defaultConfig } from "shared/config";
-
-// shared player movement helpers
 import {
   Movement,
   Player,
   move as movePlayer,
   restrict as restrictPlayer,
 } from "shared/player";
-
-// unique id generator
 import { v4 as uuidv4 } from "uuid";
 
 class Arena {
