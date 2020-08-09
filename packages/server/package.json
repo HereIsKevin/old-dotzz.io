@@ -9,6 +9,15 @@
     "watch": "tsc --watch --preserveWatchOutput",
     "clean": "shx rm -rf ./build/"
   },
+  "exports": {
+    "./": "./build/index.js",
+    "./arena": "./build/arena.js",
+    "./arena.js": "./build/arena.js",
+    "./router": "./build/router.js",
+    "./router.js": "./build/router.js",
+    "./server": "./build/server.js",
+    "./server.js": "./build/server.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HereIsKevin/dotzz.io.git"
