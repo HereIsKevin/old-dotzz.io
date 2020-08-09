@@ -5,7 +5,7 @@ import http from "http";
 import mime from "mime";
 import path from "path";
 
-import { Handler } from "./server";
+import { Handler } from "server/server";
 
 interface Route {
   children: Record<string, Route>;
@@ -21,7 +21,7 @@ class Router {
     this.staticCache = {};
   }
 
-  public route(route: string, handler: Handler) {
+  public route(route: string, handler: Handler): void {
     const parts = route.split("/").filter((x) => x !== "");
 
     let current = this.tree;
@@ -37,7 +37,7 @@ class Router {
     current.handler = handler;
   }
 
-  public async routeStaticDirectory(route: string, filePath: string) {
+  public async routeStaticDirectory(route: string, filePath: string): Promise<void> {
     for (const file of await fs.readdir(filePath)) {
       const currentPath = `${filePath}${path.sep}${file}`;
 
@@ -52,7 +52,7 @@ class Router {
     }
   }
 
-  public async routeStaticFile(route: string, filePath: string) {
+  public async routeStaticFile(route: string, filePath: string): Promise<void> {
     this.route(route, async (request, response) => {
       response.setHeader(
         "Content-Type",

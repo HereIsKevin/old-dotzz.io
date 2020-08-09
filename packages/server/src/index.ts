@@ -1,8 +1,8 @@
 import WebSocket from "ws";
 
-import { Arena, Movement } from "./arena.js";
-import { Router } from "./router.js";
-import { Server } from "./server.js";
+import { Arena, Movement } from "server/arena";
+import { Router } from "server/router";
+import { Server } from "server/server";
 
 interface DotZZConfig {
   port: number;
