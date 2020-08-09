@@ -6,7 +6,8 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "paths": {
-      "shared/*": ["../shared/build/*"]
+      "shared/*": ["../shared/build/*"],
+      "server/*": ["./src/*"]
     }
   },
   "include": ["./src/"]
