@@ -7,6 +7,7 @@
     "build:tsc": "tsc",
     "build:rollup": "rollup --config",
     "build:terser": "terser --config-file ./terser.json --output ./dist/index.min.js -- ./dist/index.js",
+    "build:obfuscate": "javascript-obfuscator ./dist/index.min.js --config ./obfuscator.json --output ./dist/index.min.js",
     "build": "npm-run-all --sequential build:tsc build:rollup build:terser",
     "watch:tsc": "tsc --watch --preserveWatchOutput",
     "watch:rollup": "rollup --watch --no-watch.clearScreen --config",
@@ -28,6 +29,7 @@
   "homepage": "https://github.com/HereIsKevin/dotzz.io#readme",
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.1",
+    "javascript-obfuscator": "^1.9.0",
     "nodemon": "^2.0.4",
     "npm-run-all": "^4.1.5",
     "rollup": "^2.23.0",
