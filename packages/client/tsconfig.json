@@ -5,7 +5,8 @@
     "strict": true,
     "baseUrl": "./",
     "paths": {
-      "shared/*": ["../shared/src/*"]
+      "shared/*": ["../shared/build/*"],
+      "client/*": ["./src/*"]
     }
   },
   "include": ["./src/"]
