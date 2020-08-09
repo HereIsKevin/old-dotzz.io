@@ -8,7 +8,7 @@ interface Config {
   velocityIncrease: number;
   velocityDecrease: number;
   maxVelocity: number;
-  moveInterval: number;
+  frameRate: number;
 }
 
 const defaultConfig: Config = {
@@ -19,5 +19,5 @@ const defaultConfig: Config = {
   velocityIncrease: 0.4,
   velocityDecrease: 0.1,
   maxVelocity: 4,
-  moveInterval: 1000 / 60,
+  frameRate: 1000 / 60,
 };
