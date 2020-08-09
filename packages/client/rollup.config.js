@@ -8,7 +8,10 @@ export default {
   },
   plugins: [
     alias({
-      entries: [{ find: "shared", replacement: "../shared/build/" }],
+      entries: [
+        { find: "shared", replacement: "../../shared/build/" },
+        { find: "client", replacement: "./" },
+      ],
     }),
   ],
 };
