@@ -81,6 +81,8 @@ class Router {
           buffer: await fs.readFile(filePath),
           mimeType: mime.getType(filePath) ?? "text/plain",
         };
+
+        this.staticCache[filePath] = cached;
       }
 
       // write mime type and status to header
