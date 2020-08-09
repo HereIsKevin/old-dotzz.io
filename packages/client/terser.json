@@ -1,7 +1,6 @@
 {
   "compress": {
     "conditionals": false,
-    "drop_console": true,
     "ecma": 6,
     "keep_fargs": false,
     "module": true,
