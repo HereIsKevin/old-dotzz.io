@@ -57,7 +57,7 @@ class BorderSprite extends Sprite {
     y: number,
     target: HTMLCanvasElement,
     direction: string,
-    config: Config = defaultConfig,
+    config: Config = defaultConfig
   ) {
     super(x, y);
 
@@ -74,27 +74,27 @@ class BorderSprite extends Sprite {
         this.x - this.target.width,
         this.y - this.target.height,
         this.target.width,
-        this.config.height + (this.target.height * 2)
+        this.config.height + this.target.height * 2
       );
     } else if (this.direction === "right") {
       context.fillRect(
         this.x,
         this.y - this.target.height,
         this.target.width,
-        this.config.height + (this.target.height * 2)
+        this.config.height + this.target.height * 2
       );
     } else if (this.direction === "up") {
       context.fillRect(
         this.x - this.target.width,
         this.y - this.target.height,
-        this.config.width + (this.target.width * 2),
+        this.config.width + this.target.width * 2,
         this.target.height
       );
     } else if (this.direction === "down") {
       context.fillRect(
         this.x - this.target.width,
         this.y,
-        this.config.width + (this.target.width * 2),
+        this.config.width + this.target.width * 2,
         this.target.height
       );
     }
