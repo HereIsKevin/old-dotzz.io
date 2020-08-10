@@ -9,6 +9,9 @@ interface Config {
   velocityDecrease: number;
   maxVelocity: number;
   frameRate: number;
+  responseRate: number;
+  tolerance: number;
+  resolve: number;
 }
 
 const defaultConfig: Config = {
@@ -20,4 +23,7 @@ const defaultConfig: Config = {
   velocityDecrease: 0.1,
   maxVelocity: 4,
   frameRate: 1000 / 60,
+  responseRate: 1000 / 6,
+  tolerance: 20,
+  resolve: 1,
 };
