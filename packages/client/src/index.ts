@@ -1,72 +1,60 @@
-import { Game } from "./game";
-import { BorderSprite, PlayerSprite } from "./sprites";
+import { Config, defaultConfig } from "shared/config";
+import { Game } from "client/game";
+import {
+  Movement,
+  Player,
+  move as movePlayer,
+  restrict as restrictPlayer,
+} from "shared/player";
+import { BorderSprite, PlayerSprite } from "client/sprites";
 
-interface Player {
-  x: number;
-  y: number;
-  velocityX: number;
-  velocityY: number;
+interface ClientPlayer extends Player {
   offX: number;
   offY: number;
-  movement: Movement;
 }
 
-interface Movement {
-  left: boolean;
-  right: boolean;
-  up: boolean;
-  down: boolean;
-}
+function equalObjects<
+  T extends Record<string, unknown>,
+  R extends Record<string, unknown>
+>(object1: T, object2: R): boolean {
+  const keys1 = Object.getOwnPropertyNames(object1).sort();
+  const keys2 = Object.getOwnPropertyNames(object2).sort();
 
-interface DotZZConfig {
-  host: string;
-  port: number;
-  width: number;
-  height: number;
-  velocityIncrease: number;
-  velocityDecrease: number;
-  maxVelocity: number;
-  moveInterval: number;
-  resolve: number;
-}
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
 
-interface Keys {
-  up: boolean;
-  down: boolean;
-  right: boolean;
-  left: boolean;
-}
+  for (let index = 0; index < keys1.length; index++) {
+    const key1 = keys1[index];
+    const key2 = keys2[index];
 
-const dotzzConfig = {
-  port: 8000,
-  host: "192.168.1.196",
-  width: 1000,
-  height: 1000,
-  velocityIncrease: 0.4,
-  velocityDecrease: 0.1,
-  maxVelocity: 4,
-  moveInterval: 1000 / 60,
-  resolve: 1,
-};
+    if (key1 !== key2) {
+      return false;
+    } else if (object1[key1] !== object2[key2]) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 class DotZZ {
   private target: HTMLCanvasElement;
-  private config: DotZZConfig;
+  private config: Config;
   private game: Game;
   private connection: WebSocket;
-  private players: Record<string, Player>;
-  private sprites: WeakMap<Player, PlayerSprite>;
+  private players: Record<string, ClientPlayer>;
+  private sprites: WeakMap<ClientPlayer, PlayerSprite>;
   private borders: BorderSprite[];
-  private keys: Keys;
+  private keys: Movement;
   private id?: string;
-  private lastKeys: Movement;
 
   public constructor(
     target: HTMLCanvasElement,
-    config: DotZZConfig = dotzzConfig
+    config: Config = defaultConfig
   ) {
     this.target = target;
-    this.config = config;
+    this.config = { ...defaultConfig, ...config };
 
     this.game = new Game(this.target);
     this.connection = new WebSocket(
@@ -75,205 +63,80 @@ class DotZZ {
 
     this.players = {};
     this.sprites = new WeakMap();
-    this.borders = [
-      new BorderSprite(
-        0,
-        0,
-        this.target,
-        "left",
-        this.config.height,
-        this.config.width
-      ),
-      new BorderSprite(
-        0,
-        0,
-        this.target,
-        "right",
-        this.config.height,
-        this.config.width
-      ),
-      new BorderSprite(
-        0,
-        0,
-        this.target,
-        "up",
-        this.config.height,
-        this.config.width
-      ),
-      new BorderSprite(
-        0,
-        0,
-        this.target,
-        "down",
-        this.config.height,
-        this.config.width
-      ),
-    ];
+    this.borders = ["left", "right", "up", "down"].map(
+      (x) => new BorderSprite(0, 0, this.target, x, this.config)
+    );
 
     this.keys = { up: false, down: false, right: false, left: false };
-    this.lastKeys = { up: false, down: false, right: false, left: false };
     this.id = undefined;
 
-    this.game.on("keydown", (event) => {
-      const key = event.key;
+    this.game.on("keydown", (event) => this.listenKeys("down", event.key));
+    this.game.on("keyup", (event) => this.listenKeys("up", event.key));
 
-      if (key === "ArrowUp") {
-        this.keys.up = true;
-      } else if (key === "ArrowDown") {
-        this.keys.down = true;
-      } else if (key === "ArrowRight") {
-        this.keys.right = true;
-      } else if (key === "ArrowLeft") {
-        this.keys.left = true;
-      }
-    });
-
-    this.game.on("keyup", (event) => {
-      const key = event.key;
-
-      if (key === "ArrowUp") {
-        this.keys.up = false;
-      } else if (key === "ArrowDown") {
-        this.keys.down = false;
-      } else if (key === "ArrowRight") {
-        this.keys.right = false;
-      } else if (key === "ArrowLeft") {
-        this.keys.left = false;
-      }
-    });
-
-    this.connection.addEventListener("message", (event) => {
-      const data = JSON.parse(event.data);
-
-      if (data.kind === "add") {
-        this.addPlayer(
-          data.id,
-          data.x,
-          data.y,
-          data.velocityX,
-          data.velocityY,
-          data.movement
-        );
-      } else if (data.kind === "move") {
-        this.movePlayer(
-          data.id,
-          data.x,
-          data.y,
-          data.velocityX,
-          data.velocityY,
-          data.movement
-        );
-      } else if (data.kind === "remove") {
-        this.removePlayer(data.id);
-      } else if (data.kind === "id") {
-        this.id = data.id;
-      }
-    });
+    this.connection.addEventListener("message", (event) =>
+      this.listenMessage(event.data)
+    );
 
     this.connection.addEventListener("open", () => {
       this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
-      this.game.tasks.push(() => this.reportMove());
-      this.game.tasks.push(() => this.renderBorders());
-      this.game.tasks.push(() => this.renderSprites());
     });
 
     window.setInterval(() => {
-      for (const player of Object.values(this.players)) {
-        if (typeof player.movement === "undefined") {
-          continue;
-        }
+      this.movePlayers();
+      this.moveBorders();
+    }, this.config.frameRate);
 
-        // change x coordinate by current x velocity
-        player.x += player.velocityX;
-        // change y coordinate by current y velocity
-        player.y += player.velocityY;
-
-        const maxVelocity = this.config.maxVelocity;
-        const velocityIncrease = this.config.velocityIncrease;
-        const velocityDecrease = this.config.velocityDecrease;
-
-        if (player.movement.down && player.velocityY < maxVelocity) {
-          // increase y velocity when possible while moving down
-          player.velocityY += velocityIncrease;
-        } else if (player.movement.up && player.velocityY > -maxVelocity) {
-          // increase y velocity when possible while moving up
-          player.velocityY -= velocityIncrease;
-        } else if (player.velocityY < 0) {
-          // decrease y velocity when not moving up
-          player.velocityY += velocityDecrease;
-        } else if (player.velocityY > 0) {
-          // decrease y velocity when not moving down
-          player.velocityY -= velocityDecrease;
-        }
-
-        if (player.movement.right && player.velocityX < maxVelocity) {
-          // increase x velocity when possible while moving right
-          player.velocityX += velocityIncrease;
-        } else if (player.movement.left && player.velocityX > -maxVelocity) {
-          // increase x velocity when possible while moving left
-          player.velocityX -= velocityIncrease;
-        } else if (player.velocityX < 0) {
-          // decrease x velocity when not moving left
-          player.velocityX += velocityDecrease;
-        } else if (player.velocityX > 0) {
-          // decrease y velocity when not moving right
-          player.velocityX -= velocityDecrease;
-        }
-
-        const resolve = this.config.resolve;
-
-        if (player.offX < resolve && player.offX > -resolve) {
-          player.x += player.offX;
-          player.offX = 0;
-        } else if (player.offX > resolve) {
-          player.x -= resolve;
-          player.offX -= resolve;
-        } else if (player.offX < -resolve) {
-          player.x += resolve;
-          player.offX += resolve;
-        }
-
-        if (player.offY < resolve && player.offY > -resolve) {
-          player.y += player.offY;
-          player.offY = 0;
-        } else if (player.offY > resolve) {
-          player.y -= resolve;
-          player.offY -= resolve;
-        } else if (player.offY < -resolve) {
-          player.y += resolve;
-          player.offY += resolve;
-        }
-
-        // make sure y is within boundaries
-        if (player.y < 0) {
-          player.y = 0;
-        } else if (player.y > this.config.height) {
-          player.y = this.config.height;
-        }
-
-        // make sure x is within boundaries
-        if (player.x < 0) {
-          player.x = 0;
-        } else if (player.x > this.config.width) {
-          player.x = this.config.width;
-        }
-      }
-    }, this.config.moveInterval);
+    window.setInterval(() => {
+      this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
+    }, this.config.responseRate);
   }
 
-  private reportMove(): void {
-    if (
-      this.lastKeys.down !== this.keys.down ||
-      this.lastKeys.up !== this.keys.up ||
-      this.lastKeys.right !== this.keys.right ||
-      this.lastKeys.left !== this.keys.left
-    ) {
-      this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
-      this.lastKeys = { ...this.keys };
+  private movePlayers(): void {
+    for (const player of Object.values(this.players)) {
+      if (typeof player.movement === "undefined") {
+        continue;
+      }
+
+      movePlayer(player);
+
+      const resolve = this.config.resolve;
+      const tolerance = this.config.tolerance;
+
+      console.log(player.offX, player.offY)
+
+      if (Math.abs(player.offX) > tolerance) {
+        player.x -= player.offX;
+        player.offX = 0;
+      } else if (player.offX < resolve && player.offX > -resolve) {
+        player.x += player.offX;
+        player.offX = 0;
+      } else if (player.offX > resolve) {
+        player.x -= resolve;
+        player.offX -= resolve;
+      } else if (player.offX < -resolve) {
+        player.x += resolve;
+        player.offX += resolve;
+      }
+
+      if (Math.abs(player.offY) > tolerance) {
+        player.y -= player.offY;
+        player.offY = 0;
+      } else if (player.offY < resolve && player.offY > -resolve) {
+        player.y += player.offY;
+        player.offY = 0;
+      } else if (player.offY > resolve) {
+        player.y -= resolve;
+        player.offY -= resolve;
+      } else if (player.offY < -resolve) {
+        player.y += resolve;
+        player.offY += resolve;
+      }
+
+      restrictPlayer(player);
     }
   }
 
-  private renderBorders(): void {
+  private moveBorders(): void {
     if (typeof this.id === "undefined") {
       return;
     }
@@ -286,22 +149,86 @@ class DotZZ {
     this.borders[0].x = originX + (0 - currentPlayer.x);
     this.borders[0].y = originY + (0 - currentPlayer.y);
 
-    this.borders[1].x = originX + (1000 - currentPlayer.x);
+    this.borders[1].x = originX + (this.config.width - currentPlayer.x);
     this.borders[1].y = originY + (0 - currentPlayer.y);
 
     this.borders[2].x = originX + (0 - currentPlayer.x);
     this.borders[2].y = originY + (0 - currentPlayer.y);
 
     this.borders[3].x = originX + (0 - currentPlayer.x);
-    this.borders[3].y = originY + (1000 - currentPlayer.y);
-
-    this.borders[0].render(this.game.context);
-    this.borders[1].render(this.game.context);
-    this.borders[2].render(this.game.context);
-    this.borders[3].render(this.game.context);
+    this.borders[3].y = originY + (this.config.height - currentPlayer.y);
   }
 
-  private renderSprites(): void {
+  private listenMessage(data: string) {
+    const parsed = JSON.parse(data);
+
+    if (parsed.kind === "add") {
+      this.players[parsed.id] = {
+        x: parsed.x,
+        y: parsed.y,
+        offX: 0,
+        offY: 0,
+        velocityX: parsed.velocityX,
+        velocityY: parsed.velocityY,
+        movement: parsed.movement,
+      };
+    } else if (parsed.kind === "move") {
+      const player = this.players[parsed.id];
+
+      player.offX = player.x - parsed.x;
+      player.offY = player.y - parsed.y;
+      player.velocityX = parsed.velocityX;
+      player.velocityY = parsed.velocityY;
+      player.movement = parsed.movement;
+    } else if (parsed.kind === "remove") {
+      delete this.players[parsed.id];
+    } else if (parsed.kind === "id") {
+      this.id = parsed.id;
+      this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
+      this.game.tasks.push((context) => {
+        this.renderBorders(context);
+        this.renderSprites(context);
+      });
+    }
+  }
+
+  private listenKeys(direction: "up" | "down", key: string): void {
+    const change = direction === "down";
+    const oldKeys = { ...this.keys };
+
+    switch (key) {
+      case "ArrowUp":
+      case "w":
+        this.keys.up = change;
+        break;
+      case "ArrowDown":
+      case "s":
+        this.keys.down = change;
+        break;
+      case "ArrowRight":
+      case "d":
+        this.keys.right = change;
+        break;
+      case "ArrowLeft":
+      case "a":
+        this.keys.left = change;
+        break;
+    }
+
+    if (
+      !equalObjects(oldKeys, (this.keys as unknown) as Record<string, unknown>)
+    ) {
+      // this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
+    }
+  }
+
+  private renderBorders(context: CanvasRenderingContext2D): void {
+    for (const border of this.borders) {
+      border.render(context);
+    }
+  }
+
+  private renderSprites(context: CanvasRenderingContext2D): void {
     // do not render anything if the current player id is unknown
     if (typeof this.id === "undefined") {
       return;
@@ -336,48 +263,8 @@ class DotZZ {
       sprite.y = originY + (player.y - currentPlayer.y);
 
       // render sprite on canvas
-      sprite.render(this.game.context);
+      sprite.render(context);
     }
-  }
-
-  private addPlayer(
-    id: string,
-    x: number,
-    y: number,
-    velocityX: number,
-    velocityY: number,
-    movement: Movement
-  ): void {
-    this.players[id] = {
-      x,
-      y,
-      velocityX,
-      velocityY,
-      offX: 0,
-      offY: 0,
-      movement,
-    };
-  }
-
-  private movePlayer(
-    id: string,
-    x: number,
-    y: number,
-    velocityX: number,
-    velocityY: number,
-    movement: Movement
-  ): void {
-    const player = this.players[id];
-
-    player.offX = player.x - x;
-    player.offY = player.y - y;
-    player.velocityX = velocityX;
-    player.velocityY = velocityY;
-    player.movement = movement;
-  }
-
-  private removePlayer(id: string): void {
-    delete this.players[id];
   }
 
   public run(): void {
