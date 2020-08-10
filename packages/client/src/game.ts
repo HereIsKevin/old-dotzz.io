@@ -12,7 +12,7 @@ class Game {
   public canvas: HTMLCanvasElement;
   public context: CanvasRenderingContext2D;
 
-  public tasks: (() => void)[];
+  public tasks: ((context: CanvasRenderingContext2D) => void)[];
 
   public constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -59,14 +59,14 @@ class Game {
 
     // run all tasks
     for (const task of this.tasks) {
-      task();
+      task(this.context);
     }
 
     // prepare for next frame
     window.requestAnimationFrame(this.render);
   }
 
-  public play() {
+  public play(): void {
     this.render();
   }
 }
