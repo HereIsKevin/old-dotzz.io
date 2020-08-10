@@ -1,12 +1,12 @@
+import { BorderSprite, PlayerSprite } from "client/sprites";
 import { Config, defaultConfig } from "shared/config";
-import { Game } from "client/game";
 import {
   Movement,
   Player,
   move as movePlayer,
   restrict as restrictPlayer,
 } from "shared/player";
-import { BorderSprite, PlayerSprite } from "client/sprites";
+import { Game } from "client/game";
 
 interface ClientPlayer extends Player {
   offX: number;
@@ -101,8 +101,6 @@ class DotZZ {
 
       const resolve = this.config.resolve;
       const tolerance = this.config.tolerance;
-
-      console.log(player.offX, player.offY)
 
       if (Math.abs(player.offX) > tolerance) {
         player.x -= player.offX;
