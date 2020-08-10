@@ -1,6 +1,6 @@
 export { BorderSprite, Sprite, PlayerSprite };
 
-type Direction = "left" | "right" | "up" | "down";
+import { Config, defaultConfig } from "shared/config";
 
 function circle(
   context: CanvasRenderingContext2D,
@@ -20,9 +20,13 @@ class Sprite {
     this.y = y;
   }
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+
   public render(context: CanvasRenderingContext2D): void {
     throw new Error("render is not implemented");
   }
+
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }
 
 class PlayerSprite extends Sprite {
@@ -44,25 +48,22 @@ class PlayerSprite extends Sprite {
 }
 
 class BorderSprite extends Sprite {
-  public direction: Direction;
+  public direction: string;
   public target: HTMLCanvasElement;
-  public height: number;
-  public width: number;
+  public config: Config;
 
   public constructor(
     x: number,
     y: number,
     target: HTMLCanvasElement,
-    direction: Direction,
-    height: number,
-    width: number
+    direction: string,
+    config: Config = defaultConfig,
   ) {
     super(x, y);
 
-    this.direction = direction;
     this.target = target;
-    this.height = height;
-    this.width = width;
+    this.direction = direction;
+    this.config = { ...defaultConfig, ...config };
   }
 
   public render(context: CanvasRenderingContext2D): void {
@@ -73,27 +74,27 @@ class BorderSprite extends Sprite {
         this.x - this.target.width,
         this.y - this.target.height,
         this.target.width,
-        this.height + this.target.height * 2
+        this.config.height + (this.target.height * 2)
       );
     } else if (this.direction === "right") {
       context.fillRect(
         this.x,
         this.y - this.target.height,
         this.target.width,
-        this.height + this.target.height * 2
+        this.config.height + (this.target.height * 2)
       );
     } else if (this.direction === "up") {
       context.fillRect(
         this.x - this.target.width,
         this.y - this.target.height,
-        this.width + this.target.width * 2,
+        this.config.width + (this.target.width * 2),
         this.target.height
       );
     } else if (this.direction === "down") {
       context.fillRect(
         this.x - this.target.width,
         this.y,
-        this.width + this.target.width * 2,
+        this.config.width + (this.target.width * 2),
         this.target.height
       );
     }
