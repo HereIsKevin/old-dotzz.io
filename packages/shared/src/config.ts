@@ -12,6 +12,11 @@ interface Config {
   responseRate: number;
   tolerance: number;
   resolve: number;
+  maxFood: number;
+  foodIncrease: number;
+  foodSize: number;
+  minSize: number;
+  maxSize: number;
 }
 
 const defaultConfig: Config = {
@@ -26,4 +31,9 @@ const defaultConfig: Config = {
   responseRate: 1000 / 6,
   tolerance: 1,
   resolve: 2,
+  maxFood: 100,
+  foodIncrease: 10,
+  foodSize: 10,
+  minSize: 20,
+  maxSize: 100,
 };
