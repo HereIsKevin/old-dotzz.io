@@ -12,6 +12,7 @@ interface Movement {
 interface Player {
   x: number;
   y: number;
+  size: number;
   velocityX: number;
   velocityY: number;
   movement: Movement;
