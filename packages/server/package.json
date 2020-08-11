@@ -8,7 +8,8 @@
     "build": "tsc",
     "watch": "tsc --watch --preserveWatchOutput",
     "clean": "shx rm -rf ./build/",
-    "start": "node ./build/index.js"
+    "start": "node ./build/index.js",
+    "serve": "nodemon --watch ../client/build/ --watch ../shared/build/ --watch ./build/ ./build/index.js"
   },
   "exports": {
     "./": "./build/index.js",
@@ -36,6 +37,7 @@
     "@types/node": "^14.0.27",
     "@types/uuid": "^8.0.1",
     "@types/ws": "^7.2.6",
+    "nodemon": "^2.0.4",
     "shx": "^0.3.2",
     "typescript": "^3.9.7"
   },
