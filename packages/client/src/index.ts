@@ -247,6 +247,23 @@ class DotZZ {
     const originX = this.target.width / 2;
     const originY = this.target.height / 2;
 
+    for (const food of Object.values(this.food)) {
+      let sprite = this.foodSprites.get(food);
+
+      if (typeof sprite === "undefined") {
+        sprite = new FoodSprite(0, 0);
+        this.foodSprites.set(food, sprite);
+      }
+
+      // 0 for x is x coordinate of the current player, then center visually
+      sprite.x = originX + (food.x - currentPlayer.x);
+      // 0 for y is y coordinate of the current player, then center visually
+      sprite.y = originY + (food.y - currentPlayer.y);
+
+      // render sprite on canvas
+      sprite.render(context);
+    }
+
     for (const player of Object.values(this.players)) {
       let sprite = this.sprites.get(player);
 
@@ -269,23 +286,6 @@ class DotZZ {
       sprite.y = originY + (player.y - currentPlayer.y);
 
       sprite.size = player.size;
-
-      // render sprite on canvas
-      sprite.render(context);
-    }
-
-    for (const food of Object.values(this.food)) {
-      let sprite = this.foodSprites.get(food);
-
-      if (typeof sprite === "undefined") {
-        sprite = new FoodSprite(0, 0);
-        this.foodSprites.set(food, sprite);
-      }
-
-      // 0 for x is x coordinate of the current player, then center visually
-      sprite.x = originX + (food.x - currentPlayer.x);
-      // 0 for y is y coordinate of the current player, then center visually
-      sprite.y = originY + (food.y - currentPlayer.y);
 
       // render sprite on canvas
       sprite.render(context);
