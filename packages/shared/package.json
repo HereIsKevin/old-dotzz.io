@@ -12,7 +12,9 @@
     "./config": "./build/config.js",
     "./config.js": "./build/config.js",
     "./player": "./build/player.js",
-    "./player.js": "./build/player.js"
+    "./player.js": "./build/player.js",
+    "./food": "./build/food.js",
+    "./food.js": "./build/food.js"
   },
   "repository": {
     "type": "git",
