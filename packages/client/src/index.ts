@@ -212,12 +212,6 @@ class DotZZ {
         this.keys.left = change;
         break;
     }
-
-    if (
-      !equalObjects(oldKeys, (this.keys as unknown) as Record<string, unknown>)
-    ) {
-      // this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
-    }
   }
 
   private renderBorders(context: CanvasRenderingContext2D): void {
