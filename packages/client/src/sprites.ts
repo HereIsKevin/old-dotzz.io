@@ -1,4 +1,4 @@
-export { BorderSprite, Sprite, PlayerSprite };
+export { BorderSprite, Sprite, PlayerSprite, FoodSprite };
 
 import { Config, defaultConfig } from "shared/config";
 
@@ -29,12 +29,32 @@ class Sprite {
   /* eslint-enable @typescript-eslint/no-unused-vars */
 }
 
-class PlayerSprite extends Sprite {
-  public current: boolean;
+class FoodSprite extends Sprite {
+  public config: Config;
 
-  public constructor(x: number, y: number) {
+  public constructor(x: number, y: number, config: Config = defaultConfig) {
     super(x, y);
 
+    this.config = { ...defaultConfig, ...config };
+  }
+
+  public render(context: CanvasRenderingContext2D): void {
+    context.fillStyle = "rgb(46, 204, 64)";
+
+    context.beginPath();
+    circle(context, this.x, this.y, this.config.foodSize);
+    context.fill();
+  }
+}
+
+class PlayerSprite extends Sprite {
+  public current: boolean;
+  public size: number;
+
+  public constructor(x: number, y: number, size: number) {
+    super(x, y);
+
+    this.size = size;
     this.current = false;
   }
 
@@ -42,7 +62,7 @@ class PlayerSprite extends Sprite {
     context.fillStyle = this.current ? "rgb(0, 116, 217)" : "rgb(255, 65, 54)";
 
     context.beginPath();
-    circle(context, this.x, this.y, 20);
+    circle(context, this.x, this.y, this.size);
     context.fill();
   }
 }
