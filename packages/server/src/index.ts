@@ -106,11 +106,11 @@ class DotZZ {
     this.connectionIds.set(connection, connectionId);
 
     // iterate through all players
-    for (const [id, location] of Object.entries(this.arena.players)) {
+    for (const [id, data] of Object.entries(this.arena.players)) {
       // make sure the player is not the current connection
       if (id !== connectionId) {
         // send the player data to the connection
-        connection.send(JSON.stringify({ kind: "add", id, ...location }));
+        connection.send(JSON.stringify({ kind: "add", id, ...data }));
       }
     }
 
@@ -127,6 +127,7 @@ class DotZZ {
         id: connectionId,
         x,
         y,
+        size: this.config.minSize,
       })
     );
 
