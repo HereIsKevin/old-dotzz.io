@@ -24,6 +24,6 @@ const defaultConfig: Config = {
   maxVelocity: 4,
   frameRate: 1000 / 60,
   responseRate: 1000 / 6,
-  tolerance: 20,
+  tolerance: 1,
   resolve: 2,
 };

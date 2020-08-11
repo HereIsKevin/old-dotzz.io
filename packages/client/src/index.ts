@@ -88,6 +88,7 @@ class DotZZ {
 
     window.setInterval(() => {
       this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
+      this.reconcilePlayers();
     }, this.config.responseRate);
   }
 
@@ -98,13 +99,17 @@ class DotZZ {
       }
 
       movePlayer(player);
+      restrictPlayer(player);
+    }
+  }
 
+  private reconcilePlayers(): void {
+    for (const player of Object.values(this.players)) {
       const resolve = this.config.resolve;
       const tolerance = this.config.tolerance;
 
-      if (Math.abs(player.offX) > tolerance) {
-        player.x -= player.offX;
-        player.offX = 0;
+      if (player.offX < tolerance && player.offX > -tolerance) {
+        // do not reconcile
       } else if (player.offX < resolve && player.offX > -resolve) {
         player.x += player.offX;
         player.offX = 0;
@@ -116,9 +121,8 @@ class DotZZ {
         player.offX += resolve;
       }
 
-      if (Math.abs(player.offY) > tolerance) {
-        player.y -= player.offY;
-        player.offY = 0;
+      if (player.offY < tolerance && player.offY > -tolerance) {
+        // do not reconcile
       } else if (player.offY < resolve && player.offY > -resolve) {
         player.y += player.offY;
         player.offY = 0;
@@ -129,8 +133,6 @@ class DotZZ {
         player.y += resolve;
         player.offY += resolve;
       }
-
-      restrictPlayer(player);
     }
   }
 
