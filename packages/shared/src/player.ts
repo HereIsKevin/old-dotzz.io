@@ -54,6 +54,32 @@ function move(player: Player, config: Config = defaultConfig): void {
     // decrease y velocity when not moving right
     player.velocityX -= velocityDecrease;
   }
+
+  if (player.velocityX > maxVelocity) {
+    player.velocityX = maxVelocity;
+  } else if (player.velocityX < -maxVelocity) {
+    player.velocityX = -maxVelocity;
+  }
+
+  if (player.velocityY > maxVelocity) {
+    player.velocityY = maxVelocity;
+  } else if (player.velocityY < -maxVelocity) {
+    player.velocityY = -maxVelocity;
+  }
+
+  if (
+    player.velocityX > -velocityDecrease &&
+    player.velocityX < velocityDecrease
+  ) {
+    player.velocityX = 0;
+  }
+
+  if (
+    player.velocityY > -velocityDecrease &&
+    player.velocityY < velocityDecrease
+  ) {
+    player.velocityY = 0;
+  }
 }
 
 function restrict(player: Player, config: Config = defaultConfig): void {
