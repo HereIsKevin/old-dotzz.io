@@ -1,4 +1,4 @@
-import { BorderSprite, PlayerSprite } from "client/sprites";
+import { BorderSprite, PlayerSprite, FoodSprite } from "client/sprites";
 import { Config, defaultConfig } from "shared/config";
 import {
   Movement,
@@ -6,6 +6,7 @@ import {
   move as movePlayer,
   restrict as restrictPlayer,
 } from "shared/player";
+import { Food } from "shared/food";
 import { Game } from "client/game";
 
 interface ClientPlayer extends Player {
@@ -43,7 +44,9 @@ class DotZZ {
   private config: Config;
   private game: Game;
   private connection: WebSocket;
+  private food: Record<string, Food>;
   private players: Record<string, ClientPlayer>;
+  private foodSprites: WeakMap<Food, FoodSprite>;
   private sprites: WeakMap<ClientPlayer, PlayerSprite>;
   private borders: BorderSprite[];
   private keys: Movement;
@@ -61,7 +64,9 @@ class DotZZ {
       `ws://${this.config.host}:${this.config.port}`
     );
 
+    this.food = {};
     this.players = {};
+    this.foodSprites = new WeakMap();
     this.sprites = new WeakMap();
     this.borders = ["left", "right", "up", "down"].map(
       (x) => new BorderSprite(0, 0, this.target, x, this.config)
@@ -168,6 +173,7 @@ class DotZZ {
         y: parsed.y,
         offX: 0,
         offY: 0,
+        size: parsed.size,
         velocityX: parsed.velocityX,
         velocityY: parsed.velocityY,
         movement: parsed.movement,
@@ -189,6 +195,12 @@ class DotZZ {
         this.renderBorders(context);
         this.renderSprites(context);
       });
+    } else if (parsed.kind === "resize") {
+      this.players[parsed.id].size = parsed.size;
+    } else if (parsed.kind === "addFood") {
+      this.food[parsed.id] = { x: parsed.x, y: parsed.y };
+    } else if (parsed.kind === "removeFood") {
+      delete this.food[parsed.id];
     }
   }
 
@@ -240,7 +252,7 @@ class DotZZ {
 
       // create new sprite if the current player does not have one
       if (typeof sprite === "undefined") {
-        sprite = new PlayerSprite(0, 0);
+        sprite = new PlayerSprite(0, 0, player.size);
         this.sprites.set(player, sprite);
       }
 
@@ -255,6 +267,25 @@ class DotZZ {
       sprite.x = originX + (player.x - currentPlayer.x);
       // 0 for y is y coordinate of the current player, then center visually
       sprite.y = originY + (player.y - currentPlayer.y);
+
+      sprite.size = player.size;
+
+      // render sprite on canvas
+      sprite.render(context);
+    }
+
+    for (const food of Object.values(this.food)) {
+      let sprite = this.foodSprites.get(food);
+
+      if (typeof sprite === "undefined") {
+        sprite = new FoodSprite(0, 0);
+        this.foodSprites.set(food, sprite);
+      }
+
+      // 0 for x is x coordinate of the current player, then center visually
+      sprite.x = originX + (food.x - currentPlayer.x);
+      // 0 for y is y coordinate of the current player, then center visually
+      sprite.y = originY + (food.y - currentPlayer.y);
 
       // render sprite on canvas
       sprite.render(context);
