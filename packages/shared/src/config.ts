@@ -31,9 +31,9 @@ const defaultConfig: Config = {
   responseRate: 1000 / 6,
   tolerance: 1,
   resolve: 2,
-  maxFood: 100,
+  maxFood: 30,
   foodIncrease: 10,
   foodSize: 10,
   minSize: 20,
-  maxSize: 100,
+  maxSize: 40,
 };
