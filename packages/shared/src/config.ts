@@ -29,7 +29,7 @@ const defaultConfig: Config = {
   velocityDecrease: 0.1,
   maxVelocity: 4,
   frameRate: 1000 / 60,
-  responseRate: 1000 / 6,
+  responseRate: 1000 / 30,
   tolerance: 1,
   resolve: 2,
   maxFood: 200,
