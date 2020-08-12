@@ -13,6 +13,7 @@ interface Player {
   x: number;
   y: number;
   size: number;
+  score: number;
   velocityX: number;
   velocityY: number;
   movement: Movement;
