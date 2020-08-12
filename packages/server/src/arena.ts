@@ -39,6 +39,7 @@ class Arena {
     this.players[id] = {
       x,
       y,
+      score: 0,
       size: this.config.minSize,
       velocityX: 0,
       velocityY: 0,
