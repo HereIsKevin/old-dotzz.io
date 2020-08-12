@@ -76,15 +76,24 @@ class DotZZ {
 
         if (collided) {
           this.arena.removeFood(foodId);
+
           player.size = Math.min(
             this.config.maxSize,
             player.size + this.config.growth
           );
 
-          this.sendToAll(JSON.stringify({ kind: "removeFood", id: foodId }));
+          player.score++;
 
+          this.sendToAll(JSON.stringify({ kind: "removeFood", id: foodId }));
           this.sendToAll(
             JSON.stringify({ kind: "resize", id: playerId, size: player.size })
+          );
+          this.sendToAll(
+            JSON.stringify({
+              kind: "scoreUp",
+              id: playerId,
+              score: player.score,
+            })
           );
         }
       }
@@ -135,6 +144,7 @@ class DotZZ {
         x,
         y,
         size: this.config.minSize,
+        score: 0,
       })
     );
 
