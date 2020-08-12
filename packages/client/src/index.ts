@@ -113,30 +113,32 @@ class DotZZ {
       const resolve = this.config.resolve;
       const tolerance = this.config.tolerance;
 
-      if (player.offX < tolerance && player.offX > -tolerance) {
-        // do not reconcile
+      if (Math.abs(player.offX) > resolve * 5) {
+        player.x += player.offX;
+        player.offX = 0;
       } else if (player.offX < resolve && player.offX > -resolve) {
         player.x += player.offX;
         player.offX = 0;
       } else if (player.offX > resolve) {
-        player.x -= resolve;
-        player.offX -= resolve;
-      } else if (player.offX < -resolve) {
         player.x += resolve;
         player.offX += resolve;
+      } else if (player.offX < -resolve) {
+        player.x -= resolve;
+        player.offX -= resolve;
       }
 
-      if (player.offY < tolerance && player.offY > -tolerance) {
-        // do not reconcile
+      if (Math.abs(player.offY) > resolve * 5) {
+        player.y += player.offY;
+        player.offY = 0;
       } else if (player.offY < resolve && player.offY > -resolve) {
         player.y += player.offY;
         player.offY = 0;
       } else if (player.offY > resolve) {
-        player.y -= resolve;
-        player.offY -= resolve;
-      } else if (player.offY < -resolve) {
         player.y += resolve;
         player.offY += resolve;
+      } else if (player.offY < -resolve) {
+        player.y -= resolve;
+        player.offY -= resolve;
       }
     }
   }
@@ -174,6 +176,7 @@ class DotZZ {
         offX: 0,
         offY: 0,
         size: parsed.size,
+        score: parsed.score,
         velocityX: parsed.velocityX,
         velocityY: parsed.velocityY,
         movement: parsed.movement,
@@ -181,8 +184,8 @@ class DotZZ {
     } else if (parsed.kind === "move") {
       const player = this.players[parsed.id];
 
-      player.offX = player.x - parsed.x;
-      player.offY = player.y - parsed.y;
+      player.offX = parsed.x - player.x;
+      player.offY = parsed.y - player.y;
       player.velocityX = parsed.velocityX;
       player.velocityY = parsed.velocityY;
       player.movement = parsed.movement;
@@ -201,6 +204,8 @@ class DotZZ {
       this.food[parsed.id] = { x: parsed.x, y: parsed.y };
     } else if (parsed.kind === "removeFood") {
       delete this.food[parsed.id];
+    } else if (parsed.kind === "scoreUp") {
+      this.players[parsed.id].score = parsed.score;
     }
   }
 
@@ -269,7 +274,7 @@ class DotZZ {
 
       // create new sprite if the current player does not have one
       if (typeof sprite === "undefined") {
-        sprite = new PlayerSprite(0, 0, player.size);
+        sprite = new PlayerSprite(0, 0, player.size, player.score);
         this.sprites.set(player, sprite);
       }
 
@@ -286,6 +291,7 @@ class DotZZ {
       sprite.y = originY + (player.y - currentPlayer.y);
 
       sprite.size = player.size;
+      sprite.score = player.score;
 
       // render sprite on canvas
       sprite.render(context);
