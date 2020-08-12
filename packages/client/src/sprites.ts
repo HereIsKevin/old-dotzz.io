@@ -50,11 +50,13 @@ class FoodSprite extends Sprite {
 class PlayerSprite extends Sprite {
   public current: boolean;
   public size: number;
+  public score: number;
 
-  public constructor(x: number, y: number, size: number) {
+  public constructor(x: number, y: number, size: number, score: number) {
     super(x, y);
 
     this.size = size;
+    this.score = score;
     this.current = false;
   }
 
@@ -64,6 +66,9 @@ class PlayerSprite extends Sprite {
     context.beginPath();
     circle(context, this.x, this.y, this.size);
     context.fill();
+
+    context.textAlign = "center";
+    context.fillText(String(this.score) , this.x, this.y - (this.size + 5));
   }
 }
 
