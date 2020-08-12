@@ -24,7 +24,9 @@
         "velocityY",
         "offX",
         "offY",
-        "movement"
+        "movement",
+        "score",
+        "size"
       ]
     },
     "module": true,
