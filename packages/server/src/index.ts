@@ -43,8 +43,12 @@ class DotZZ {
         restrictPlayer(player);
       }
 
-      if (Object.keys(this.arena.food).length < this.config.maxFood) {
-        this.generateFood();
+      const totalFood = Object.keys(this.arena.food).length;
+
+      if (totalFood + this.config.foodIncrease < this.config.maxFood) {
+        this.generateFood(this.config.foodIncrease);
+      } else if (this.config.maxFood - totalFood > 0) {
+        this.generateFood(this.config.maxFood - totalFood);
       }
     }, this.config.frameRate);
 
@@ -52,8 +56,8 @@ class DotZZ {
     this.routeStatic();
   }
 
-  private generateFood(): void {
-    for (let index = 0; index < this.config.foodIncrease; index++) {
+  private generateFood(amount: number): void {
+    for (let index = 0; index < amount; index++) {
       const x = randint(0, this.config.width);
       const y = randint(0, this.config.height);
       const id = this.arena.createFood(x, y);
@@ -72,7 +76,10 @@ class DotZZ {
 
         if (collided) {
           this.arena.removeFood(foodId);
-          player.size = Math.min(this.config.maxSize, player.size + 1);
+          player.size = Math.min(
+            this.config.maxSize,
+            player.size + this.config.growth
+          );
 
           this.sendToAll(JSON.stringify({ kind: "removeFood", id: foodId }));
 
