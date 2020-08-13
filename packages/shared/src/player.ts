@@ -1,4 +1,16 @@
-export { Movement, Player, move, restrict };
+export {
+  Movement,
+  Sprite,
+  Weapon,
+  Stats,
+  Player,
+  stats,
+  calculateStat,
+  move,
+  grow,
+  regen,
+  restrict,
+};
 
 import { Config, defaultConfig } from "shared/config";
 
@@ -9,25 +21,90 @@ interface Movement {
   down: boolean;
 }
 
-interface Player {
+interface Sprite {
   x: number;
   y: number;
-  size: number;
-  score: number;
   velocityX: number;
   velocityY: number;
   movement: Movement;
 }
 
+interface Weapon extends Sprite {
+  kind: "projectile" | "minion";
+  size: number;
+  damage: number;
+  duration: number;
+}
+
+interface Stats {
+  damage: number;
+  speed: number;
+  regen: number;
+  size: number;
+}
+
+interface Player extends Sprite {
+  role: "basic" | "tank" | "sniper" | "controller" | "blaster";
+  stats: Stats;
+  modifiers: Stats;
+  size: number;
+  maxSize: number;
+  score: number;
+  weapons: Weapon[];
+}
+
+const stats: Record<string, Stats> = {
+  basic: {
+    damage: 2,
+    speed: 2,
+    regen: 2,
+    size: 2,
+  },
+  tank: {
+    damage: 2,
+    speed: 1,
+    regen: 1.5,
+    size: 2,
+  },
+  sniper: {
+    damage: 1.5,
+    speed: 2,
+    regen: 0.5,
+    size: 0.75,
+  },
+  controller: {
+    damage: 1.5,
+    speed: 0.75,
+    regen: 1,
+    size: 0.75,
+  },
+  blaster: {
+    damage: 3,
+    speed: 0.5,
+    regen: 0.5,
+    size: 1,
+  },
+};
+
+function calculateStat(value: number): number {
+  return 1 + value * (1 / 9);
+}
+
 function move(player: Player, config: Config = defaultConfig): void {
+  const modifier = calculateStat(player.stats.speed) * player.modifiers.speed;
+
+  console.log(modifier);
+
   // change x coordinate by current x velocity
   player.x += player.velocityX;
   // change y coordinate by current y velocity
   player.y += player.velocityY;
 
-  const maxVelocity = config.maxVelocity;
-  const velocityIncrease = config.velocityIncrease;
-  const velocityDecrease = config.velocityDecrease;
+  const maxVelocity = config.velocity.max * modifier;
+  const velocityIncrease = config.velocity.increase * modifier;
+  const velocityDecrease = config.velocity.decrease * modifier;
+
+  console.log(velocityIncrease, velocityDecrease);
 
   if (player.movement.down && player.velocityY < maxVelocity) {
     // increase y velocity when possible while moving down
@@ -57,30 +134,62 @@ function move(player: Player, config: Config = defaultConfig): void {
     player.velocityX -= velocityDecrease;
   }
 
+  // limit x velocity to max velocity
   if (player.velocityX > maxVelocity) {
     player.velocityX = maxVelocity;
   } else if (player.velocityX < -maxVelocity) {
     player.velocityX = -maxVelocity;
   }
 
+  // limit y velocity to max velocity
   if (player.velocityY > maxVelocity) {
     player.velocityY = maxVelocity;
   } else if (player.velocityY < -maxVelocity) {
     player.velocityY = -maxVelocity;
   }
 
+  // make x velocity 0 when it is near 0
   if (
     player.velocityX > -velocityDecrease &&
     player.velocityX < velocityDecrease
   ) {
+    console.log("velodec", velocityDecrease);
     player.velocityX = 0;
   }
 
+  // make y velocity 0 when it is near 0
   if (
     player.velocityY > -velocityDecrease &&
     player.velocityY < velocityDecrease
   ) {
+    console.log("velounc", velocityDecrease);
     player.velocityY = 0;
+  }
+}
+
+function grow(
+  player: Player,
+  growth: number,
+  config: Config = defaultConfig
+): void {
+  const maxSize =
+    calculateStat(player.stats.size) * config.sizeChange + config.baseSize;
+
+  player.size += growth;
+  player.maxSize = player.size;
+
+  if (player.size < config.baseSize) {
+    player.size = config.baseSize;
+  } else if (player.size > maxSize) {
+    player.size = maxSize;
+  }
+}
+
+function regen(player: Player, config: Config = defaultConfig): void {
+  if (player.size < player.maxSize) {
+    player.size += player.stats.regen;
+  } else {
+    player.size = player.maxSize;
   }
 }
 
