@@ -7,7 +7,7 @@ export {
   stats,
   calculateStat,
   move,
-  grow,
+  size,
   regen,
   restrict,
 };
@@ -91,20 +91,18 @@ function calculateStat(value: number): number {
 }
 
 function move(player: Player, config: Config = defaultConfig): void {
+  // calculate modifier for defaults based on stats and role
   const modifier = calculateStat(player.stats.speed) * player.modifiers.speed;
-
-  console.log(modifier);
 
   // change x coordinate by current x velocity
   player.x += player.velocityX;
   // change y coordinate by current y velocity
   player.y += player.velocityY;
 
+  // calculate new constants with modifier
   const maxVelocity = config.velocity.max * modifier;
   const velocityIncrease = config.velocity.increase * modifier;
   const velocityDecrease = config.velocity.decrease * modifier;
-
-  console.log(velocityIncrease, velocityDecrease);
 
   if (player.movement.down && player.velocityY < maxVelocity) {
     // increase y velocity when possible while moving down
@@ -153,7 +151,6 @@ function move(player: Player, config: Config = defaultConfig): void {
     player.velocityX > -velocityDecrease &&
     player.velocityX < velocityDecrease
   ) {
-    console.log("velodec", velocityDecrease);
     player.velocityX = 0;
   }
 
@@ -162,25 +159,26 @@ function move(player: Player, config: Config = defaultConfig): void {
     player.velocityY > -velocityDecrease &&
     player.velocityY < velocityDecrease
   ) {
-    console.log("velounc", velocityDecrease);
     player.velocityY = 0;
   }
 }
 
-function grow(
+function size(
   player: Player,
-  growth: number,
+  change: number,
   config: Config = defaultConfig
 ): void {
+  // calculate maximum size based on stats, change, and base size
   const maxSize =
     calculateStat(player.stats.size) * config.sizeChange + config.baseSize;
 
-  player.size += growth;
-  player.maxSize = player.size;
+  // change size by amount of change
+  player.size += change;
+  // update player maximum size if needed
+  player.maxSize = Math.max(player.size, player.maxSize);
 
-  if (player.size < config.baseSize) {
-    player.size = config.baseSize;
-  } else if (player.size > maxSize) {
+  // make sure player is not larger than maximum size
+  if (player.size > maxSize) {
     player.size = maxSize;
   }
 }
