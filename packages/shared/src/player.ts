@@ -1,18 +1,6 @@
-export {
-  Movement,
-  Sprite,
-  Weapon,
-  Stats,
-  Player,
-  stats,
-  calculateStat,
-  move,
-  size,
-  regen,
-  restrict,
-};
+export { Movement, Sprite, Food, Weapon, Player, move, restrict };
 
-import { Config, defaultConfig } from "shared/config";
+import { defaultConfig as config } from "shared/config";
 
 interface Movement {
   left: boolean;
@@ -27,182 +15,103 @@ interface Sprite {
   velocityX: number;
   velocityY: number;
   movement: Movement;
+  mass: number;
+}
+
+interface Food extends Sprite {
+  role: "dot";
 }
 
 interface Weapon extends Sprite {
-  kind: "projectile" | "minion";
-  size: number;
-  damage: number;
+  role: "absorber";
   duration: number;
 }
 
-interface Stats {
-  damage: number;
-  speed: number;
-  regen: number;
-  size: number;
-}
-
 interface Player extends Sprite {
-  role: "basic" | "tank" | "sniper" | "controller" | "blaster";
-  stats: Stats;
-  modifiers: Stats;
-  size: number;
-  maxSize: number;
+  role: "basic";
   score: number;
   weapons: Weapon[];
 }
 
-const stats: Record<string, Stats> = {
-  basic: {
-    damage: 2,
-    speed: 2,
-    regen: 2,
-    size: 2,
-  },
-  tank: {
-    damage: 2,
-    speed: 1,
-    regen: 1.5,
-    size: 2,
-  },
-  sniper: {
-    damage: 1.5,
-    speed: 2,
-    regen: 0.5,
-    size: 0.75,
-  },
-  controller: {
-    damage: 1.5,
-    speed: 0.75,
-    regen: 1,
-    size: 0.75,
-  },
-  blaster: {
-    damage: 3,
-    speed: 0.5,
-    regen: 0.5,
-    size: 1,
-  },
-};
+function move(sprite: Sprite): void {
+  sprite.x += sprite.velocityX;
+  sprite.y += sprite.velocityY;
 
-function calculateStat(value: number): number {
-  return 1 + value * (1 / 9);
-}
+  const maxVelocity = config.velocityMax;
+  const velocityIncrease = config.velocityIncrease;
+  const velocityDecrease = config.velocityDecrease;
 
-function move(player: Player, config: Config = defaultConfig): void {
-  // calculate modifier for defaults based on stats and role
-  const modifier = calculateStat(player.stats.speed) * player.modifiers.speed;
-
-  // change x coordinate by current x velocity
-  player.x += player.velocityX;
-  // change y coordinate by current y velocity
-  player.y += player.velocityY;
-
-  // calculate new constants with modifier
-  const maxVelocity = config.velocity.max * modifier;
-  const velocityIncrease = config.velocity.increase * modifier;
-  const velocityDecrease = config.velocity.decrease * modifier;
-
-  if (player.movement.down && player.velocityY < maxVelocity) {
+  if (sprite.movement.down && sprite.velocityY < maxVelocity) {
     // increase y velocity when possible while moving down
-    player.velocityY += velocityIncrease;
-  } else if (player.movement.up && player.velocityY > -maxVelocity) {
+    sprite.velocityY += velocityIncrease;
+  } else if (sprite.movement.up && sprite.velocityY > -maxVelocity) {
     // increase y velocity when possible while moving up
-    player.velocityY -= velocityIncrease;
-  } else if (player.velocityY < 0) {
+    sprite.velocityY -= velocityIncrease;
+  } else if (sprite.velocityY < 0) {
     // decrease y velocity when not moving up
-    player.velocityY += velocityDecrease;
-  } else if (player.velocityY > 0) {
+    sprite.velocityY += velocityDecrease;
+  } else if (sprite.velocityY > 0) {
     // decrease y velocity when not moving down
-    player.velocityY -= velocityDecrease;
+    sprite.velocityY -= velocityDecrease;
   }
 
-  if (player.movement.right && player.velocityX < maxVelocity) {
+  if (sprite.movement.right && sprite.velocityX < maxVelocity) {
     // increase x velocity when possible while moving right
-    player.velocityX += velocityIncrease;
-  } else if (player.movement.left && player.velocityX > -maxVelocity) {
+    sprite.velocityX += velocityIncrease;
+  } else if (sprite.movement.left && sprite.velocityX > -maxVelocity) {
     // increase x velocity when possible while moving left
-    player.velocityX -= velocityIncrease;
-  } else if (player.velocityX < 0) {
+    sprite.velocityX -= velocityIncrease;
+  } else if (sprite.velocityX < 0) {
     // decrease x velocity when not moving left
-    player.velocityX += velocityDecrease;
-  } else if (player.velocityX > 0) {
+    sprite.velocityX += velocityDecrease;
+  } else if (sprite.velocityX > 0) {
     // decrease y velocity when not moving right
-    player.velocityX -= velocityDecrease;
+    sprite.velocityX -= velocityDecrease;
   }
 
   // limit x velocity to max velocity
-  if (player.velocityX > maxVelocity) {
-    player.velocityX = maxVelocity;
-  } else if (player.velocityX < -maxVelocity) {
-    player.velocityX = -maxVelocity;
+  if (sprite.velocityX > maxVelocity) {
+    sprite.velocityX = maxVelocity;
+  } else if (sprite.velocityX < -maxVelocity) {
+    sprite.velocityX = -maxVelocity;
   }
 
   // limit y velocity to max velocity
-  if (player.velocityY > maxVelocity) {
-    player.velocityY = maxVelocity;
-  } else if (player.velocityY < -maxVelocity) {
-    player.velocityY = -maxVelocity;
+  if (sprite.velocityY > maxVelocity) {
+    sprite.velocityY = maxVelocity;
+  } else if (sprite.velocityY < -maxVelocity) {
+    sprite.velocityY = -maxVelocity;
   }
 
   // make x velocity 0 when it is near 0
   if (
-    player.velocityX > -velocityDecrease &&
-    player.velocityX < velocityDecrease
+    sprite.velocityX > -velocityDecrease &&
+    sprite.velocityX < velocityDecrease
   ) {
-    player.velocityX = 0;
+    sprite.velocityX = 0;
   }
 
   // make y velocity 0 when it is near 0
   if (
-    player.velocityY > -velocityDecrease &&
-    player.velocityY < velocityDecrease
+    sprite.velocityY > -velocityDecrease &&
+    sprite.velocityY < velocityDecrease
   ) {
-    player.velocityY = 0;
+    sprite.velocityY = 0;
   }
 }
 
-function size(
-  player: Player,
-  change: number,
-  config: Config = defaultConfig
-): void {
-  // calculate maximum size based on stats, change, and base size
-  const maxSize =
-    calculateStat(player.stats.size) * config.sizeChange + config.baseSize;
-
-  // change size by amount of change
-  player.size += change;
-  // update player maximum size if needed
-  player.maxSize = Math.max(player.size, player.maxSize);
-
-  // make sure player is not larger than maximum size
-  if (player.size > maxSize) {
-    player.size = maxSize;
-  }
-}
-
-function regen(player: Player, config: Config = defaultConfig): void {
-  if (player.size < player.maxSize) {
-    player.size += player.stats.regen;
-  } else {
-    player.size = player.maxSize;
-  }
-}
-
-function restrict(player: Player, config: Config = defaultConfig): void {
+function restrict(sprite: Sprite): void {
   // make sure y is within boundaries
-  if (player.y < 0) {
-    player.y = 0;
-  } else if (player.y > config.height) {
-    player.y = config.height;
+  if (sprite.y < 0) {
+    sprite.y = 0;
+  } else if (sprite.y > config.height) {
+    sprite.y = config.height;
   }
 
   // make sure x is within boundaries
-  if (player.x < 0) {
-    player.x = 0;
-  } else if (player.x > config.width) {
-    player.x = config.width;
+  if (sprite.x < 0) {
+    sprite.x = 0;
+  } else if (sprite.x > config.width) {
+    sprite.x = config.width;
   }
 }
