@@ -14,8 +14,8 @@ interface Sprite {
   y: number;
   velocityX: number;
   velocityY: number;
-  movement: Movement;
   mass: number;
+  movement: Movement;
 }
 
 interface Food extends Sprite {
