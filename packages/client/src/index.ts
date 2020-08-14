@@ -5,6 +5,7 @@ import {
   Player,
   move as movePlayer,
   restrict as restrictPlayer,
+  stats
 } from "shared/player";
 import { Food } from "shared/food";
 import { Game } from "client/game";
@@ -173,13 +174,23 @@ class DotZZ {
       this.players[parsed.id] = {
         x: parsed.x,
         y: parsed.y,
-        offX: 0,
-        offY: 0,
-        size: parsed.size,
-        score: parsed.score,
         velocityX: parsed.velocityX,
         velocityY: parsed.velocityY,
         movement: parsed.movement,
+        offX: 0,
+        offY: 0,
+        role: "basic",
+        stats: {
+          damage: 0,
+          speed: 0,
+          regen: 0,
+          size: 0,
+        },
+        modifiers: stats.basic,
+        maxSize: this.config.baseSize,
+        size: parsed.size,
+        score: parsed.score,
+        weapons: [],
       };
     } else if (parsed.kind === "move") {
       const player = this.players[parsed.id];
