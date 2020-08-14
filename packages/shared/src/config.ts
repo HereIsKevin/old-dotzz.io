@@ -1,11 +1,5 @@
 export { Config, defaultConfig };
 
-interface Velocity {
-  increase: number;
-  decrease: number;
-  max: number;
-}
-
 interface Config {
   // server
   host: string;
@@ -14,9 +8,11 @@ interface Config {
   width: number;
   height: number;
   food: number;
-  foodSize: number;
+  foodMass: number;
   // velocity
-  velocity: Velocity;
+  velocityIncrease: number;
+  velocityDecrease: number;
+  velocityMax: number;
   // intervals
   frameRate: number;
   responseRate: number;
@@ -24,9 +20,7 @@ interface Config {
   tolerance: number;
   resolve: number;
   // player size
-  baseSize: number;
-  sizeChange: 20;
-  growth: number;
+  playerMass: number;
 }
 
 const defaultConfig: Config = {
@@ -37,13 +31,11 @@ const defaultConfig: Config = {
   width: 2000,
   height: 2000,
   food: 200,
-  foodSize: 10,
+  foodMass: 10,
   // velocity
-  velocity: {
-    increase: 0.4,
-    decrease: 0.1,
-    max: 4,
-  },
+  velocityIncrease: 0.4,
+  velocityDecrease: 0.1,
+  velocityMax: 4,
   // intervals
   frameRate: 1000 / 60,
   responseRate: 1000 / 30,
@@ -51,7 +43,5 @@ const defaultConfig: Config = {
   tolerance: 1,
   resolve: 2,
   // player
-  baseSize: 20,
-  sizeChange: 20,
-  growth: 0.05,
+  playerMass: 20,
 };
