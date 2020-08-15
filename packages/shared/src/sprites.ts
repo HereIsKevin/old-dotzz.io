@@ -1,4 +1,14 @@
-export { Movement, Sprite, Food, Weapon, Player, move, restrict };
+export {
+  Food,
+  Movement,
+  Player,
+  Sprite,
+  Weapon,
+  massToSize,
+  move,
+  restrict,
+  sizeToMass,
+};
 
 import { defaultConfig as config } from "shared/config";
 
@@ -31,6 +41,16 @@ interface Player extends Sprite {
   role: "basic";
   score: number;
   weapons: Weapon[];
+}
+
+function massToSize(mass: number): number {
+  // calculate size by using the mass with a modifier
+  return Math.sqrt((mass * config.sizeModifier) / Math.PI);
+}
+
+function sizeToMass(size: number): number {
+  // calculate mass by using the size and reverting with the modifier
+  return (size ** 2 * Math.PI) / config.sizeModifier;
 }
 
 function move(sprite: Sprite): void {
