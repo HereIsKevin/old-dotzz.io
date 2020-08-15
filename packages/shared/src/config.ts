@@ -19,8 +19,9 @@ interface Config {
   // reconcilation
   tolerance: number;
   resolve: number;
-  // player size
+  // player
   playerMass: number;
+  sizeModifier: number;
 }
 
 const defaultConfig: Config = {
@@ -31,7 +32,7 @@ const defaultConfig: Config = {
   width: 2000,
   height: 2000,
   food: 200,
-  foodMass: 10,
+  foodMass: 5,
   // velocity
   velocityIncrease: 0.4,
   velocityDecrease: 0.1,
@@ -44,4 +45,5 @@ const defaultConfig: Config = {
   resolve: 2,
   // player
   playerMass: 20,
+  sizeModifier: 20,
 };
