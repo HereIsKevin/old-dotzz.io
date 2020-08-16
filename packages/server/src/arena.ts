@@ -5,8 +5,8 @@ import { defaultConfig as config } from "shared/config";
 import { v4 as uuidv4 } from "uuid";
 
 class Arena {
-  public players: Record<string, Player>;
-  public food: Record<string, Food>;
+  public players: Record<string, Player | undefined>;
+  public food: Record<string, Food | undefined>;
 
   public constructor() {
     this.players = {};
@@ -52,18 +52,30 @@ class Arena {
   }
 
   public massPlayer(id: string, change: number): void {
-    this.players[id].mass += change;
+    const player = this.players[id];
+
+    if (typeof player !== "undefined") {
+      player.mass += change;
+    }
   }
 
   public scorePlayer(id: string, change: number): void {
-    this.players[id].score += change;
+    const player = this.players[id];
+
+    if (typeof player !== "undefined") {
+      player.score += change;
+    }
   }
 
   public movePlayer(id: string, movement: Movement): void {
-    this.players[id].movement = movement;
+    const player = this.players[id];
+
+    if (typeof player !== "undefined") {
+      player.movement = movement;
+    }
   }
 
   public removePlayer(id: string): void {
-    delete this.food[id];
+    delete this.players[id];
   }
 }
