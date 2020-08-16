@@ -120,12 +120,12 @@ class DotZZ {
         this.sendToAll({
           kind: "massPlayer",
           id: id,
-          mass: sprite.mass,
+          mass: player.mass,
         });
         this.sendToAll({
           kind: "scorePlayer",
           id: id,
-          score: sprite.score,
+          score: player.score,
         });
       } else {
         index++;
