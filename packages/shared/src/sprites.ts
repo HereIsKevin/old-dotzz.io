@@ -45,12 +45,12 @@ interface Player extends Sprite {
 
 function massToSize(mass: number): number {
   // calculate size by using the mass with a modifier
-  return Math.sqrt((mass * config.sizeModifier) / Math.PI);
+  return Math.sqrt((mass * config.sizeModifier) / Math.PI) + config.sizeBase;
 }
 
 function sizeToMass(size: number): number {
   // calculate mass by using the size and reverting with the modifier
-  return (size ** 2 * Math.PI) / config.sizeModifier;
+  return ((size - config.sizeBase) ** 2 * Math.PI) / config.sizeModifier;
 }
 
 function move(sprite: Sprite): void {
