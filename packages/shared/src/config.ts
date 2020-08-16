@@ -22,6 +22,7 @@ interface Config {
   // player
   playerMass: number;
   sizeModifier: number;
+  sizeBase: number;
 }
 
 const defaultConfig: Config = {
@@ -46,4 +47,5 @@ const defaultConfig: Config = {
   // player
   playerMass: 20,
   sizeModifier: 20,
+  sizeBase: 7,
 };
