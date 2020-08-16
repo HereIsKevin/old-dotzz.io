@@ -1,26 +1,29 @@
-export { circleCollided, randint };
+export { contained, collided, randint };
 
-interface Circle {
-  x: number;
-  y: number;
-  radius: number;
-}
+import { Sprite, massToSize } from "shared/sprites";
 
-function randint(min: number, max: number) {
+function randint(min: number, max: number): number {
   const roundedMin = Math.ceil(min);
   const roundedMax = Math.floor(max);
 
   return Math.floor(Math.random() * (roundedMax - roundedMin)) + roundedMin;
 }
 
-function circleCollided(circle1: Circle, circle2: Circle): boolean {
-  var deltaX = circle1.x - circle2.x;
-  var deltaY = circle1.y - circle2.y;
-  var distance = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+function collided(sprite1: Sprite, sprite2: Sprite): boolean {
+  const deltaX = sprite1.x - sprite2.x;
+  const deltaY = sprite1.y - sprite2.y;
+  const distance = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+  const difference = massToSize(sprite1.mass) + massToSize(sprite2.mass);
 
-  if (distance < circle1.radius + circle2.radius) {
-    return true;
-  }
+  return distance < difference;
+}
 
-  return false;
+function contained(sprite1: Sprite, sprite2: Sprite): boolean {
+  const deltaX = sprite1.x - sprite2.x;
+  const deltaY = sprite1.y - sprite2.y;
+  const distance = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+  const radius1 = massToSize(sprite1.mass);
+  const radius2 = massToSize(sprite2.mass);
+
+  return radius1 > distance + radius2;
 }
