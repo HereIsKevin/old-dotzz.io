@@ -17,7 +17,6 @@ interface Config {
   frameRate: number;
   responseRate: number;
   // reconcilation
-  tolerance: number;
   resolve: number;
   // player
   playerMass: number;
@@ -42,7 +41,6 @@ const defaultConfig: Config = {
   frameRate: 1000 / 60,
   responseRate: 1000 / 30,
   // reconcilation
-  tolerance: 1,
   resolve: 2,
   // player
   playerMass: 20,
