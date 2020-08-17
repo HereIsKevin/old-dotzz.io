@@ -9,7 +9,7 @@
     "watch": "tsc --watch --preserveWatchOutput",
     "clean": "shx rm -rf ./build/",
     "start": "node ./build/index.js",
-    "serve": "nodemon --watch ../client/build/ --watch ../shared/build/ --watch ./build/ ./build/index.js"
+    "watch:start": "nodemon --watch ../client/build/ --watch ../shared/build/ --watch ./build/ ./build/index.js"
   },
   "exports": {
     "./": "./build/index.js",
