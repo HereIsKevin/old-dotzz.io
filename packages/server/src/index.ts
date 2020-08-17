@@ -222,7 +222,7 @@ class DotZZ {
         if (data.kind === "initialize" && !this.connectionIds.has(connection)) {
           this.initializePlayer(
             connection,
-            data.name === "" ? "unknown" : data.name
+            data.name.trim() === "" ? "unknown" : data.name.trim()
           );
         } else if (data.kind === "movePlayer") {
           this.movePlayer(connection, data.movement);
