@@ -91,7 +91,7 @@ class DotZZ {
         player.mass,
         player.score,
         player.name,
-        id === this.id
+        false
       );
     } else if (parsed.kind === "movePlayer") {
       const player = this.players[parsed.id];
@@ -107,6 +107,10 @@ class DotZZ {
       this.players[parsed.id].score = parsed.score;
     } else if (parsed.kind === "removePlayer") {
       const id = parsed.id;
+
+      if (id === this.id) {
+        window.location.reload();
+      }
 
       delete this.players[id];
       delete this.sprites[id];
@@ -160,6 +164,12 @@ class DotZZ {
       sprite.y = originY + (player.y - currentPlayer.y);
       sprite.size = player.mass;
       sprite.score = player.score;
+
+      if (id === this.id) {
+        sprite.current = true;
+      } else {
+        sprite.current = false;
+      }
     }
 
     for (const [id, food] of Object.entries(this.food)) {
