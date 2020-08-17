@@ -1,4 +1,4 @@
-export { contained, collided, randint };
+export { collided, contained, randint };
 
 import { Sprite, massToSize } from "shared/sprites";
 
