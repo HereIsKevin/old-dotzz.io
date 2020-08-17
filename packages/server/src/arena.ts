@@ -33,13 +33,14 @@ class Arena {
     delete this.food[id];
   }
 
-  public addPlayer(x: number, y: number): string {
+  public addPlayer(name: string, x: number, y: number): string {
     const id = uuidv4();
 
     this.players[id] = {
       role: "basic",
       x,
       y,
+      name,
       velocityX: 0,
       velocityY: 0,
       mass: config.playerMass,
