@@ -145,11 +145,11 @@ class DotZZ {
     }
   }
 
-  private initializePlayer(connection: WebSocket): void {
+  private initializePlayer(connection: WebSocket, name: string): void {
     const x = randint(0, config.width);
     const y = randint(0, config.height);
 
-    const connectionId = this.arena.addPlayer(x, y);
+    const connectionId = this.arena.addPlayer(name, x, y);
     this.connectionIds.set(connection, connectionId);
 
     for (const [id, data] of Object.entries(this.arena.players)) {
@@ -212,10 +212,6 @@ class DotZZ {
 
   public listen(): void {
     this.socket.on("connection", (connection) => {
-      if (!this.connectionIds.has(connection)) {
-        this.initializePlayer(connection);
-      }
-
       connection.on("close", () => {
         this.removePlayer(connection);
       });
@@ -223,7 +219,12 @@ class DotZZ {
       connection.on("message", (message) => {
         const data = JSON.parse(String(message));
 
-        if (data.kind === "movePlayer") {
+        if (data.kind === "initialize" && !this.connectionIds.has(connection)) {
+          this.initializePlayer(
+            connection,
+            data.name === "" ? "unknown" : data.name
+          );
+        } else if (data.kind === "movePlayer") {
           this.movePlayer(connection, data.movement);
         }
       });
