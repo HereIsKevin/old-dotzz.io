@@ -71,7 +71,7 @@ class PlayerSprite extends Sprite {
     context.fillText(
       String(this.score),
       this.x,
-      this.y - (massToSize(this.size) + 15)
+      this.y - (massToSize(this.size) + 6)
     );
   }
 }
