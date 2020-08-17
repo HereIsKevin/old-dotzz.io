@@ -30,7 +30,8 @@
         "score",
         "movement",
         "role",
-        "weapons"
+        "weapons",
+        "name"
       ]
     },
     "module": true,
