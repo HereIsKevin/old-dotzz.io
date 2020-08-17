@@ -29,21 +29,25 @@ class Sprite {
 }
 
 class FoodSprite extends Sprite {
+  public mass: number;
+
   public constructor(x: number, y: number) {
     super(x, y);
+
+    this.mass = config.foodMass
   }
 
   public render(context: CanvasRenderingContext2D): void {
     context.fillStyle = "rgb(46, 204, 64)";
 
     context.beginPath();
-    circle(context, this.x, this.y, massToSize(config.foodMass));
+    circle(context, this.x, this.y, massToSize(this.mass));
     context.fill();
   }
 }
 
 class PlayerSprite extends Sprite {
-  public size: number;
+  public mass: number;
   public score: number;
   public name: string;
   public current: boolean;
@@ -51,14 +55,14 @@ class PlayerSprite extends Sprite {
   public constructor(
     x: number,
     y: number,
-    size: number,
+    mass: number,
     score: number,
     name: string,
     current: boolean
   ) {
     super(x, y);
 
-    this.size = size;
+    this.mass = mass;
     this.score = score;
     this.name = name;
     this.current = current;
@@ -67,7 +71,7 @@ class PlayerSprite extends Sprite {
   public render(context: CanvasRenderingContext2D): void {
     context.fillStyle = this.current ? "rgb(0, 116, 217)" : "rgb(255, 65, 54)";
 
-    const size = massToSize(this.size);
+    const size = massToSize(this.mass);
 
     context.beginPath();
     circle(context, this.x, this.y, size);
