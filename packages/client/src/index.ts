@@ -274,11 +274,32 @@ class DotZZ {
   }
 }
 
-const target = document.getElementById("main");
+const main = document.getElementById("main");
+const name = document.getElementById("name");
+const play = document.getElementById("play");
+const connect = document.getElementById("connect");
 
-if (target === null || !(target instanceof HTMLCanvasElement)) {
-  throw new Error("target cannot be found");
+if (main === null || name === null || play === null || connect === null) {
+  throw new Error("some required elements are missing");
 }
 
-const dotzz = new DotZZ(target);
-dotzz.run();
+if (!(main instanceof HTMLCanvasElement)) {
+  throw new Error("main canvas is not a canvas");
+}
+
+main.hidden = true;
+
+name.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    play.click();
+  }
+});
+
+play.addEventListener("click", () => {
+  const game = new DotZZ(main);
+
+  main.hidden = false;
+  connect.hidden = true;
+
+  game.run();
+});
