@@ -8,8 +8,14 @@
     "build": "tsc",
     "watch": "tsc --watch --preserveWatchOutput",
     "clean": "shx rm -rf ./build/",
+    "clean:certificate": "shx rm -f ./server.crt ./server.csr ./server.key ./server.pass.key",
     "start": "node ./build/index.js",
-    "watch:start": "nodemon --watch ../client/dist/ --watch ../shared/build/ --watch ./build/ ./build/index.js"
+    "watch:start": "nodemon --watch ../client/dist/ --watch ../shared/build/ --watch ./build/ ./build/index.js",
+    "certificate:start": "openssl genrsa -des3 -passout pass:x -out server.pass.key 2048",
+    "certificate:key": "openssl rsa -passin pass:x -in server.pass.key -out server.key",
+    "certificate:new": "openssl req -new -key server.key -out server.csr",
+    "certificate:generate": "openssl x509 -req -sha256 -days 365 -in server.csr -signkey server.key -out server.crt",
+    "certificate": "npm-run-all --sequential certificate:start certificate:key certificate:new certificate:generate"
   },
   "exports": {
     "./": "./build/index.js",
@@ -38,6 +44,7 @@
     "@types/uuid": "^8.3.0",
     "@types/ws": "^7.2.6",
     "nodemon": "^2.0.4",
+    "npm-run-all": "^4.1.5",
     "shx": "^0.3.2",
     "typescript": "^3.9.7"
   },
