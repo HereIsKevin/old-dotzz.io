@@ -22,9 +22,10 @@ class DotZZ {
   private food: Record<string, Food>;
   private sprites: Record<string, FoodSprite | PlayerSprite>;
   private borders: BorderSprite[];
+  private name: string;
   private id?: string;
 
-  public constructor(target: HTMLCanvasElement) {
+  public constructor(target: HTMLCanvasElement, name: string) {
     this.target = target;
 
     this.game = new Game(this.target);
@@ -38,6 +39,7 @@ class DotZZ {
       (x) => new BorderSprite(0, 0, this.target, x)
     );
 
+    this.name = name;
     this.id = undefined;
   }
 
@@ -88,6 +90,7 @@ class DotZZ {
         originY + (player.y - currentY),
         player.mass,
         player.score,
+        player.name,
         id === this.id
       );
     } else if (parsed.kind === "movePlayer") {
@@ -257,6 +260,12 @@ class DotZZ {
       this.listenMessage(event.data)
     );
 
+    this.connection.addEventListener("open", (event) =>
+      this.connection.send(
+        JSON.stringify({ kind: "initialize", name: this.name })
+      )
+    );
+
     window.setInterval(() => {
       this.updatePlayers();
       this.updateBorders();
@@ -288,6 +297,7 @@ if (!(main instanceof HTMLCanvasElement)) {
 }
 
 main.hidden = true;
+name.focus();
 
 name.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
@@ -296,7 +306,7 @@ name.addEventListener("keydown", (event) => {
 });
 
 play.addEventListener("click", () => {
-  const game = new DotZZ(main);
+  const game = new DotZZ(main, name.value ?? "");
 
   main.hidden = false;
   connect.hidden = true;
