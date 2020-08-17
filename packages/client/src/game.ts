@@ -53,7 +53,7 @@ class Game {
     }
   }
 
-  private render() {
+  private render(): void {
     // clear the canvas before rendering
     this.context.clearRect(0, 0, window.innerWidth, window.innerHeight);
 

@@ -21,9 +21,11 @@ class Sprite {
     this.y = y;
   }
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   public render(context: CanvasRenderingContext2D): void {
     throw new Error("render is not implemented");
   }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 }
 
 class FoodSprite extends Sprite {

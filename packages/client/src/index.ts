@@ -1,13 +1,12 @@
 import { BorderSprite, FoodSprite, PlayerSprite } from "client/sprites";
-import { defaultConfig as config } from "shared/config";
 import {
   Food,
-  Movement,
   Player,
   move as movePlayer,
   restrict as restrictPlayer,
 } from "shared/sprites";
 import { Game } from "client/game";
+import { defaultConfig as config } from "shared/config";
 
 interface ClientPlayer extends Player {
   offX: number;
@@ -71,7 +70,7 @@ class DotZZ {
     }
   }
 
-  private listenMessage(data: string) {
+  private listenMessage(data: string): void {
     const parsed = JSON.parse(data);
 
     if (parsed.kind === "addPlayer") {
@@ -187,7 +186,6 @@ class DotZZ {
   private reconcilePlayers(): void {
     for (const player of Object.values(this.players)) {
       const resolve = config.resolve;
-      const tolerance = config.tolerance;
 
       if (Math.abs(player.offX) > resolve * 5) {
         player.x += player.offX;
@@ -270,7 +268,7 @@ class DotZZ {
       this.listenMessage(event.data)
     );
 
-    this.connection.addEventListener("open", (event) =>
+    this.connection.addEventListener("open", () =>
       this.connection.send(
         JSON.stringify({ kind: "initialize", name: this.name })
       )
@@ -302,8 +300,11 @@ if (main === null || name === null || play === null || connect === null) {
   throw new Error("some required elements are missing");
 }
 
-if (!(main instanceof HTMLCanvasElement)) {
-  throw new Error("main canvas is not a canvas");
+if (
+  !(main instanceof HTMLCanvasElement) ||
+  !(name instanceof HTMLInputElement)
+) {
+  throw new Error("some required elements have incorrect types");
 }
 
 main.hidden = true;
@@ -316,7 +317,7 @@ name.addEventListener("keydown", (event) => {
 });
 
 play.addEventListener("click", () => {
-  const game = new DotZZ(main, name.value ?? "");
+  const game = new DotZZ(main, name.value);
 
   main.hidden = false;
   connect.hidden = true;
