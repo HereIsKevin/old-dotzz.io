@@ -163,7 +163,7 @@ class DotZZ {
 
       sprite.x = originX + (player.x - currentPlayer.x);
       sprite.y = originY + (player.y - currentPlayer.y);
-      sprite.size = player.mass;
+      sprite.mass = player.mass;
       sprite.score = player.score;
 
       if (id === this.id) {
@@ -260,7 +260,9 @@ class DotZZ {
       border.render(context);
     }
 
-    for (const sprite of Object.values(this.sprites)) {
+    for (const sprite of Object.values(this.sprites).sort(
+      (a, b) => a.mass - b.mass
+    )) {
       sprite.render(context);
     }
   }
