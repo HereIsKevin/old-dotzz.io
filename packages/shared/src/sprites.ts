@@ -58,9 +58,11 @@ function move(sprite: Sprite): void {
   sprite.x += sprite.velocityX;
   sprite.y += sprite.velocityY;
 
-  const maxVelocity = config.velocityMax;
-  const velocityIncrease = config.velocityIncrease;
-  const velocityDecrease = config.velocityDecrease;
+  const modifier = 1 - 0.005 * (Math.min(sprite.mass, 100) / 100);
+
+  const maxVelocity = config.velocityMax * modifier;
+  const velocityIncrease = config.velocityIncrease * modifier;
+  const velocityDecrease = config.velocityDecrease * modifier;
 
   if (sprite.movement.down && sprite.velocityY < maxVelocity) {
     // increase y velocity when possible while moving down
