@@ -42,7 +42,7 @@ class DotZZ {
   }
 
   private listenKeys(direction: "up" | "down", key: string): void {
-    if (typeof this.id === "undefined") {
+    if (this.id === undefined) {
       return;
     }
 
@@ -76,10 +76,16 @@ class DotZZ {
       const id = parsed.id;
       const player = parsed.player;
 
+      const originX = this.target.width / 2;
+      const originY = this.target.height / 2;
+
+      const currentX = this.id !== undefined ? this.players[this.id].x : 0;
+      const currentY = this.id !== undefined ? this.players[this.id].y : 0;
+
       this.players[id] = { ...player, offX: 0, offY: 0 };
       this.sprites[id] = new PlayerSprite(
-        player.x,
-        player.y,
+        originX + (player.x - currentX),
+        originY + (player.y - currentY),
         player.mass,
         player.score,
         id === this.id
@@ -108,10 +114,17 @@ class DotZZ {
       const id = parsed.id;
       const food = parsed.food;
 
-      console.log(id, food)
+      const originX = this.target.width / 2;
+      const originY = this.target.height / 2;
+
+      const currentX = this.id !== undefined ? this.players[this.id].x : 0;
+      const currentY = this.id !== undefined ? this.players[this.id].y : 0;
 
       this.food[id] = food;
-      this.sprites[id] = new FoodSprite(food.x, food.y);
+      this.sprites[id] = new FoodSprite(
+        originX + (food.x - currentX),
+        originY + (food.y - currentY)
+      );
     } else if (parsed.kind === "removeFood") {
       const id = parsed.id;
 
@@ -121,7 +134,7 @@ class DotZZ {
   }
 
   private updatePlayers(): void {
-    if (typeof this.id === "undefined") {
+    if (this.id === undefined) {
       return;
     }
 
@@ -194,7 +207,7 @@ class DotZZ {
   }
 
   private updateBorders(): void {
-    if (typeof this.id === "undefined") {
+    if (this.id === undefined) {
       return;
     }
 
@@ -217,7 +230,7 @@ class DotZZ {
   }
 
   private move(): void {
-    if (typeof this.id === "undefined") {
+    if (this.id === undefined) {
       return;
     }
 
