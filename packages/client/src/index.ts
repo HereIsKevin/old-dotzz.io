@@ -68,6 +68,8 @@ class DotZZ {
         player.movement.left = change;
         break;
     }
+
+    this.move();
   }
 
   private listenMessage(data: string): void {
