@@ -18,15 +18,19 @@
         "right",
         "up",
         "left",
+        "food",
+        "player",
         "kind",
         "id",
         "velocityX",
         "velocityY",
         "offX",
         "offY",
-        "movement",
+        "mass",
         "score",
-        "size"
+        "movement",
+        "role",
+        "weapons"
       ]
     },
     "module": true,
