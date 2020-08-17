@@ -35,7 +35,7 @@ class Router {
 
     for (const part of parts) {
       // create new child of current section if needed
-      if (typeof current.children[part] === "undefined") {
+      if (current.children[part] === undefined) {
         current.children[part] = { children: {} };
       }
 
@@ -75,7 +75,7 @@ class Router {
       // try to find cached file and mime type
       let cached = this.staticCache[filePath];
 
-      if (typeof cached === "undefined") {
+      if (cached === undefined) {
         // read file and find mime type if cache does not exist
         cached = {
           buffer: await fs.readFile(filePath),
@@ -98,7 +98,7 @@ class Router {
     request: http.IncomingMessage,
     response: http.ServerResponse
   ): Promise<void> {
-    if (typeof request.url === "undefined") {
+    if (request.url === undefined) {
       return;
     }
 
@@ -115,7 +115,7 @@ class Router {
       const next = current.children[part];
 
       // stop and exit if next section is missing
-      if (typeof next === "undefined") {
+      if (next === undefined) {
         return;
       }
 
@@ -124,7 +124,7 @@ class Router {
     }
 
     // handle the route if a handler exists for it
-    if (typeof current.handler !== "undefined") {
+    if (current.handler !== undefined) {
       await current.handler(request, response);
     }
   }

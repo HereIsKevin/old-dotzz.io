@@ -54,7 +54,7 @@ class Arena {
   public massPlayer(id: string, change: number): void {
     const player = this.players[id];
 
-    if (typeof player !== "undefined") {
+    if (player !== undefined) {
       player.mass += change;
     }
   }
@@ -62,7 +62,7 @@ class Arena {
   public scorePlayer(id: string, change: number): void {
     const player = this.players[id];
 
-    if (typeof player !== "undefined") {
+    if (player !== undefined) {
       player.score += change;
     }
   }
@@ -70,7 +70,7 @@ class Arena {
   public movePlayer(id: string, movement: Movement): void {
     const player = this.players[id];
 
-    if (typeof player !== "undefined") {
+    if (player !== undefined) {
       player.movement = movement;
     }
   }

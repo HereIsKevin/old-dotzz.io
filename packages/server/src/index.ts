@@ -23,7 +23,7 @@ class DotZZ {
 
     global.setInterval(() => {
       for (const [id, player] of Object.entries(this.arena.players)) {
-        if (typeof player === "undefined") {
+        if (player === undefined) {
           delete this.arena.players[id];
         } else {
           this.eatFood(id, player);
@@ -36,7 +36,7 @@ class DotZZ {
         const id = Object.keys(this.arena.players)[index];
         const player = this.arena.players[id];
 
-        if (typeof player === "undefined") {
+        if (player === undefined) {
           delete this.arena.players[id];
         } else {
           this.eatPlayers(id, player);
@@ -45,7 +45,7 @@ class DotZZ {
       }
 
       for (const player of Object.values(this.arena.players)) {
-        if (typeof player !== "undefined") {
+        if (player !== undefined) {
           move(player);
           restrict(player);
         }
@@ -59,10 +59,6 @@ class DotZZ {
 
   private generateFood(): void {
     const amount = config.food - Object.keys(this.arena.food).length;
-
-    if (amount !== 0) {
-      console.log("generate food at amount", amount);
-    }
 
     for (let index = 0; index < amount; index++) {
       const x = randint(0, config.width + 1);
@@ -80,7 +76,7 @@ class DotZZ {
       const foodId = Object.keys(this.arena.food)[index];
       const food = this.arena.food[foodId];
 
-      if (typeof food === "undefined") {
+      if (food === undefined) {
         delete this.arena.food[foodId];
       } else if (collided(player, food)) {
         this.arena.removeFood(foodId);
@@ -111,7 +107,7 @@ class DotZZ {
       const spriteId = Object.keys(this.arena.players)[index];
       const sprite = this.arena.players[spriteId];
 
-      if (typeof sprite === "undefined") {
+      if (sprite === undefined) {
         delete this.arena.players[spriteId];
       } else if (player !== sprite && contained(player, sprite)) {
         this.arena.removePlayer(spriteId);
@@ -180,13 +176,13 @@ class DotZZ {
   private movePlayer(connection: WebSocket, message: Movement): void {
     const connectionId = this.connectionIds.get(connection);
 
-    if (typeof connectionId === "undefined") {
+    if (connectionId === undefined) {
       return;
     }
 
     const player = this.arena.players[connectionId];
 
-    if (typeof player === "undefined") {
+    if (player === undefined) {
       return;
     }
 
@@ -205,7 +201,7 @@ class DotZZ {
   private removePlayer(connection: WebSocket): void {
     const connectionId = this.connectionIds.get(connection);
 
-    if (typeof connectionId === "undefined") {
+    if (connectionId === undefined) {
       return;
     }
 
