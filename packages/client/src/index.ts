@@ -1,13 +1,12 @@
-import { BorderSprite, PlayerSprite, FoodSprite } from "client/sprites";
-import { Config, defaultConfig } from "shared/config";
+import { BorderSprite, FoodSprite, PlayerSprite } from "client/sprites";
+import { defaultConfig as config } from "shared/config";
 import {
+  Food,
   Movement,
   Player,
   move as movePlayer,
   restrict as restrictPlayer,
-  stats
-} from "shared/player";
-import { Food } from "shared/food";
+} from "shared/sprites";
 import { Game } from "client/game";
 
 interface ClientPlayer extends Player {
@@ -15,104 +14,154 @@ interface ClientPlayer extends Player {
   offY: number;
 }
 
-function equalObjects<
-  T extends Record<string, unknown>,
-  R extends Record<string, unknown>
->(object1: T, object2: R): boolean {
-  const keys1 = Object.getOwnPropertyNames(object1).sort();
-  const keys2 = Object.getOwnPropertyNames(object2).sort();
+class DotZZ {
+  private target: HTMLCanvasElement;
+  private game: Game;
+  private connection: WebSocket;
+  private players: Record<string, ClientPlayer>;
+  private food: Record<string, Food>;
+  private sprites: Record<string, FoodSprite | PlayerSprite>;
+  private borders: BorderSprite[];
+  private id?: string;
 
-  if (keys1.length !== keys2.length) {
-    return false;
+  public constructor(target: HTMLCanvasElement) {
+    this.target = target;
+
+    this.game = new Game(this.target);
+    this.connection = new WebSocket(`ws://${config.host}:${config.port}`);
+
+    this.players = {};
+    this.food = {};
+
+    this.sprites = {};
+    this.borders = ["left", "right", "up", "down"].map(
+      (x) => new BorderSprite(0, 0, this.target, x)
+    );
+
+    this.id = undefined;
   }
 
-  for (let index = 0; index < keys1.length; index++) {
-    const key1 = keys1[index];
-    const key2 = keys2[index];
+  private listenKeys(direction: "up" | "down", key: string): void {
+    if (typeof this.id === "undefined") {
+      return;
+    }
 
-    if (key1 !== key2) {
-      return false;
-    } else if (object1[key1] !== object2[key2]) {
-      return false;
+    const change = direction === "down";
+    const player = this.players[this.id];
+
+    switch (key) {
+      case "ArrowUp":
+      case "w":
+        player.movement.up = change;
+        break;
+      case "ArrowDown":
+      case "s":
+        player.movement.down = change;
+        break;
+      case "ArrowRight":
+      case "d":
+        player.movement.right = change;
+        break;
+      case "ArrowLeft":
+      case "a":
+        player.movement.left = change;
+        break;
     }
   }
 
-  return true;
-}
+  private listenMessage(data: string) {
+    const parsed = JSON.parse(data);
 
-class DotZZ {
-  private target: HTMLCanvasElement;
-  private config: Config;
-  private game: Game;
-  private connection: WebSocket;
-  private food: Record<string, Food>;
-  private players: Record<string, ClientPlayer>;
-  private foodSprites: WeakMap<Food, FoodSprite>;
-  private sprites: WeakMap<ClientPlayer, PlayerSprite>;
-  private borders: BorderSprite[];
-  private keys: Movement;
-  private id?: string;
+    if (parsed.kind === "addPlayer") {
+      const id = parsed.id;
+      const player = parsed.player;
 
-  public constructor(
-    target: HTMLCanvasElement,
-    config: Config = defaultConfig
-  ) {
-    this.target = target;
-    this.config = { ...defaultConfig, ...config };
+      this.players[id] = { ...player, offX: 0, offY: 0 };
+      this.sprites[id] = new PlayerSprite(
+        player.x,
+        player.y,
+        player.mass,
+        player.score,
+        id === this.id
+      );
+    } else if (parsed.kind === "movePlayer") {
+      const player = this.players[parsed.id];
 
-    this.game = new Game(this.target);
-    this.connection = new WebSocket(
-      `ws://${this.config.host}:${this.config.port}`
-    );
+      player.offX = parsed.x - player.x;
+      player.offY = parsed.y - player.y;
+      player.velocityX = parsed.velocityX;
+      player.velocityY = parsed.velocityY;
+      player.movement = parsed.movement;
+    } else if (parsed.kind === "massPlayer") {
+      this.players[parsed.id].mass = parsed.mass;
+    } else if (parsed.kind === "scorePlayer") {
+      this.players[parsed.id].score = parsed.score;
+    } else if (parsed.kind === "removePlayer") {
+      const id = parsed.id;
 
-    this.food = {};
-    this.players = {};
-    this.foodSprites = new WeakMap();
-    this.sprites = new WeakMap();
-    this.borders = ["left", "right", "up", "down"].map(
-      (x) => new BorderSprite(0, 0, this.target, x, this.config)
-    );
+      delete this.players[id];
+      delete this.sprites[id];
+    } else if (parsed.kind === "initialize") {
+      this.id = parsed.id;
+      this.move();
+    } else if (parsed.kind === "addFood") {
+      const id = parsed.id;
+      const food = parsed.food;
 
-    this.keys = { up: false, down: false, right: false, left: false };
-    this.id = undefined;
+      console.log(id, food)
 
-    this.game.on("keydown", (event) => this.listenKeys("down", event.key));
-    this.game.on("keyup", (event) => this.listenKeys("up", event.key));
+      this.food[id] = food;
+      this.sprites[id] = new FoodSprite(food.x, food.y);
+    } else if (parsed.kind === "removeFood") {
+      const id = parsed.id;
 
-    this.connection.addEventListener("message", (event) =>
-      this.listenMessage(event.data)
-    );
-
-    this.connection.addEventListener("open", () => {
-      this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
-    });
-
-    window.setInterval(() => {
-      this.movePlayers();
-      this.moveBorders();
-    }, this.config.frameRate);
-
-    window.setInterval(() => {
-      this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
-      this.reconcilePlayers();
-    }, this.config.responseRate);
+      delete this.food[id];
+      delete this.sprites[id];
+    }
   }
 
-  private movePlayers(): void {
-    for (const player of Object.values(this.players)) {
-      if (typeof player.movement === "undefined") {
+  private updatePlayers(): void {
+    if (typeof this.id === "undefined") {
+      return;
+    }
+
+    const currentPlayer = this.players[this.id];
+
+    const originX = this.target.width / 2;
+    const originY = this.target.height / 2;
+
+    for (const [id, player] of Object.entries(this.players)) {
+      movePlayer(player);
+      restrictPlayer(player);
+
+      const sprite = this.sprites[id];
+
+      if (!(sprite instanceof PlayerSprite)) {
         continue;
       }
 
-      movePlayer(player);
-      restrictPlayer(player);
+      sprite.x = originX + (player.x - currentPlayer.x);
+      sprite.y = originY + (player.y - currentPlayer.y);
+      sprite.size = player.mass;
+      sprite.score = player.score;
+    }
+
+    for (const [id, food] of Object.entries(this.food)) {
+      const sprite = this.sprites[id];
+
+      if (!(sprite instanceof FoodSprite)) {
+        continue;
+      }
+
+      sprite.x = originX + (food.x - currentPlayer.x);
+      sprite.y = originY + (food.y - currentPlayer.y);
     }
   }
 
   private reconcilePlayers(): void {
     for (const player of Object.values(this.players)) {
-      const resolve = this.config.resolve;
-      const tolerance = this.config.tolerance;
+      const resolve = config.resolve;
+      const tolerance = config.tolerance;
 
       if (Math.abs(player.offX) > resolve * 5) {
         player.x += player.offX;
@@ -144,7 +193,7 @@ class DotZZ {
     }
   }
 
-  private moveBorders(): void {
+  private updateBorders(): void {
     if (typeof this.id === "undefined") {
       return;
     }
@@ -157,171 +206,66 @@ class DotZZ {
     this.borders[0].x = originX + (0 - currentPlayer.x);
     this.borders[0].y = originY + (0 - currentPlayer.y);
 
-    this.borders[1].x = originX + (this.config.width - currentPlayer.x);
+    this.borders[1].x = originX + (config.width - currentPlayer.x);
     this.borders[1].y = originY + (0 - currentPlayer.y);
 
     this.borders[2].x = originX + (0 - currentPlayer.x);
     this.borders[2].y = originY + (0 - currentPlayer.y);
 
     this.borders[3].x = originX + (0 - currentPlayer.x);
-    this.borders[3].y = originY + (this.config.height - currentPlayer.y);
+    this.borders[3].y = originY + (config.height - currentPlayer.y);
   }
 
-  private listenMessage(data: string) {
-    const parsed = JSON.parse(data);
-
-    if (parsed.kind === "add") {
-      this.players[parsed.id] = {
-        x: parsed.x,
-        y: parsed.y,
-        velocityX: parsed.velocityX,
-        velocityY: parsed.velocityY,
-        movement: parsed.movement,
-        offX: 0,
-        offY: 0,
-        role: "basic",
-        stats: {
-          damage: 0,
-          speed: 0,
-          regen: 0,
-          size: 0,
-        },
-        modifiers: stats.basic,
-        maxSize: this.config.baseSize,
-        size: parsed.size,
-        score: parsed.score,
-        weapons: [],
-      };
-    } else if (parsed.kind === "move") {
-      const player = this.players[parsed.id];
-
-      player.offX = parsed.x - player.x;
-      player.offY = parsed.y - player.y;
-      player.velocityX = parsed.velocityX;
-      player.velocityY = parsed.velocityY;
-      player.movement = parsed.movement;
-    } else if (parsed.kind === "remove") {
-      delete this.players[parsed.id];
-    } else if (parsed.kind === "id") {
-      this.id = parsed.id;
-      this.connection.send(JSON.stringify({ kind: "move", ...this.keys }));
-      this.game.tasks.push((context) => {
-        this.renderBorders(context);
-        this.renderSprites(context);
-      });
-    } else if (parsed.kind === "resize") {
-      this.players[parsed.id].size = parsed.size;
-    } else if (parsed.kind === "addFood") {
-      this.food[parsed.id] = { x: parsed.x, y: parsed.y };
-    } else if (parsed.kind === "removeFood") {
-      delete this.food[parsed.id];
-    } else if (parsed.kind === "scoreUp") {
-      this.players[parsed.id].score = parsed.score;
-    }
-  }
-
-  private listenKeys(direction: "up" | "down", key: string): void {
-    const change = direction === "down";
-    const oldKeys = { ...this.keys };
-
-    switch (key) {
-      case "ArrowUp":
-      case "w":
-        this.keys.up = change;
-        break;
-      case "ArrowDown":
-      case "s":
-        this.keys.down = change;
-        break;
-      case "ArrowRight":
-      case "d":
-        this.keys.right = change;
-        break;
-      case "ArrowLeft":
-      case "a":
-        this.keys.left = change;
-        break;
-    }
-  }
-
-  private renderBorders(context: CanvasRenderingContext2D): void {
-    for (const border of this.borders) {
-      border.render(context);
-    }
-  }
-
-  private renderSprites(context: CanvasRenderingContext2D): void {
-    // do not render anything if the current player id is unknown
+  private move(): void {
     if (typeof this.id === "undefined") {
       return;
     }
 
-    // fetch the current player based on the id
-    const currentPlayer = this.players[this.id];
+    this.connection.send(
+      JSON.stringify({
+        kind: "movePlayer",
+        movement: this.players[this.id].movement,
+      })
+    );
+  }
 
-    // origin is displayed at the center of the canvas
-    const originX = this.target.width / 2;
-    const originY = this.target.height / 2;
-
-    for (const food of Object.values(this.food)) {
-      let sprite = this.foodSprites.get(food);
-
-      if (typeof sprite === "undefined") {
-        sprite = new FoodSprite(0, 0);
-        this.foodSprites.set(food, sprite);
-      }
-
-      // 0 for x is x coordinate of the current player, then center visually
-      sprite.x = originX + (food.x - currentPlayer.x);
-      // 0 for y is y coordinate of the current player, then center visually
-      sprite.y = originY + (food.y - currentPlayer.y);
-
-      // render sprite on canvas
-      sprite.render(context);
+  private render(context: CanvasRenderingContext2D): void {
+    for (const border of this.borders) {
+      border.render(context);
     }
 
-    for (const player of Object.values(this.players)) {
-      let sprite = this.sprites.get(player);
-
-      // create new sprite if the current player does not have one
-      if (typeof sprite === "undefined") {
-        sprite = new PlayerSprite(0, 0, player.size, player.score);
-        this.sprites.set(player, sprite);
-      }
-
-      // mark as current if sprite is the current player
-      if (player === currentPlayer) {
-        sprite.current = true;
-      } else {
-        sprite.current = false;
-      }
-
-      // 0 for x is x coordinate of the current player, then center visually
-      sprite.x = originX + (player.x - currentPlayer.x);
-      // 0 for y is y coordinate of the current player, then center visually
-      sprite.y = originY + (player.y - currentPlayer.y);
-
-      sprite.size = player.size;
-      sprite.score = player.score;
-
-      // render sprite on canvas
+    for (const sprite of Object.values(this.sprites)) {
       sprite.render(context);
     }
   }
 
   public run(): void {
+    this.connection.addEventListener("message", (event) =>
+      this.listenMessage(event.data)
+    );
+
+    window.setInterval(() => {
+      this.updatePlayers();
+      this.updateBorders();
+    }, config.frameRate);
+
+    window.setInterval(() => {
+      this.move();
+      this.reconcilePlayers();
+    }, config.responseRate);
+
+    this.game.on("keydown", (event) => this.listenKeys("down", event.key));
+    this.game.on("keyup", (event) => this.listenKeys("up", event.key));
+    this.game.tasks.push((context) => this.render(context));
     this.game.play();
   }
 }
 
-let target = document.getElementById("main");
+const target = document.getElementById("main");
 
-if (target === null) {
-  target = new HTMLCanvasElement();
-  target.id = "main";
-
-  document.body.prepend(target);
+if (target === null || !(target instanceof HTMLCanvasElement)) {
+  throw new Error("target cannot be found");
 }
 
-const dotzz = new DotZZ(target as HTMLCanvasElement);
+const dotzz = new DotZZ(target);
 dotzz.run();
