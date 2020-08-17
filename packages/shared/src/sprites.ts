@@ -39,6 +39,7 @@ interface Weapon extends Sprite {
 
 interface Player extends Sprite {
   role: "basic";
+  name: string;
   score: number;
   weapons: Weapon[];
 }
