@@ -29,8 +29,8 @@ const defaultConfig: Config = {
   host: "192.168.1.196",
   port: 8000,
   // arena
-  width: 2000,
-  height: 2000,
+  width: 4000,
+  height: 4000,
   food: 200,
   foodMass: 5,
   // velocity
