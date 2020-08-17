@@ -1,4 +1,4 @@
-import { Movement, move, restrict, Player } from "shared/sprites";
+import { Movement, Player, move, restrict } from "shared/sprites";
 import { collided, contained, randint } from "server/utilities";
 import { Arena } from "server/arena";
 import { Router } from "server/router";
@@ -60,14 +60,16 @@ class DotZZ {
   private generateFood(): void {
     const amount = config.food - Object.keys(this.arena.food).length;
 
+    if (amount !== 0) {
+      console.log("generate food at amount", amount);
+    }
+
     for (let index = 0; index < amount; index++) {
       const x = randint(0, config.width + 1);
       const y = randint(0, config.height + 1);
       const id = this.arena.addFood(x, y);
 
-      this.sendToAll(
-        JSON.stringify({ kind: "addFood", id, food: this.arena.food[id] })
-      );
+      this.sendToAll({ kind: "addFood", id, food: this.arena.food[id] });
     }
   }
 
