@@ -43,6 +43,7 @@ class FoodSprite extends Sprite {
 class PlayerSprite extends Sprite {
   public size: number;
   public score: number;
+  public name: string;
   public current: boolean;
 
   public constructor(
@@ -50,29 +51,33 @@ class PlayerSprite extends Sprite {
     y: number,
     size: number,
     score: number,
+    name: string,
     current: boolean
   ) {
     super(x, y);
 
     this.size = size;
     this.score = score;
+    this.name = name;
     this.current = current;
   }
 
   public render(context: CanvasRenderingContext2D): void {
     context.fillStyle = this.current ? "rgb(0, 116, 217)" : "rgb(255, 65, 54)";
 
+    const size = massToSize(this.size);
+
     context.beginPath();
-    circle(context, this.x, this.y, massToSize(this.size));
+    circle(context, this.x, this.y, size);
     context.fill();
 
     context.textAlign = "center";
     context.font = "12px sans-serif";
-    context.fillText(
-      String(this.score),
-      this.x,
-      this.y - (massToSize(this.size) + 6)
-    );
+    context.fillText(String(this.score), this.x, this.y - (size + 6));
+
+    context.textAlign = "center";
+    context.font = "16px sans-serif";
+    context.fillText(this.name, this.x, this.y - (size + 20));
   }
 }
 
