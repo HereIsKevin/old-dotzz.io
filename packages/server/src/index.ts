@@ -22,6 +22,10 @@ class DotZZ {
     this.connectionIds = new WeakMap();
 
     global.setInterval(() => {
+      // console.time();
+
+      // console.time("eatFood");
+
       for (const [id, player] of Object.entries(this.arena.players)) {
         if (player === undefined) {
           delete this.arena.players[id];
@@ -29,6 +33,10 @@ class DotZZ {
           this.eatFood(id, player);
         }
       }
+
+      // console.timeEnd("eatFood");
+
+      // console.time("eatPlayers");
 
       let index = 0;
 
@@ -44,6 +52,10 @@ class DotZZ {
         }
       }
 
+      // console.timeEnd("eatPlayers");
+
+      // console.time("movePlayers");
+
       for (const player of Object.values(this.arena.players)) {
         if (player !== undefined) {
           move(player);
@@ -51,7 +63,15 @@ class DotZZ {
         }
       }
 
+      // console.timeEnd("movePlayers");
+
+      // console.time("generateFood");
+
       this.generateFood();
+
+      // console.timeEnd("generateFood");
+
+      // console.timeEnd();
     }, config.frameRate);
 
     this.routeStatic();

@@ -18,6 +18,7 @@ interface Config {
   responseRate: number;
   // reconcilation
   resolve: number;
+  tolerance: number;
   // player
   playerMass: number;
   sizeModifier: number;
@@ -31,7 +32,7 @@ const defaultConfig: Config = {
   // arena
   width: 4000,
   height: 4000,
-  food: 400,
+  food: 100,
   foodMass: 5,
   // velocity
   velocityIncrease: 0.4,
@@ -41,7 +42,8 @@ const defaultConfig: Config = {
   frameRate: 1000 / 60,
   responseRate: 1000 / 30,
   // reconcilation
-  resolve: 2,
+  resolve: 5,
+  tolerance: 1,
   // player
   playerMass: 20,
   sizeModifier: 20,

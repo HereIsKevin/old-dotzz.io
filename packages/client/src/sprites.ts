@@ -34,7 +34,7 @@ class FoodSprite extends Sprite {
   public constructor(x: number, y: number) {
     super(x, y);
 
-    this.mass = config.foodMass
+    this.mass = config.foodMass;
   }
 
   public render(context: CanvasRenderingContext2D): void {

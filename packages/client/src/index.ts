@@ -1,6 +1,7 @@
 import { BorderSprite, FoodSprite, PlayerSprite } from "client/sprites";
 import {
   Food,
+  Movement,
   Player,
   move as movePlayer,
   restrict as restrictPlayer,
@@ -48,28 +49,28 @@ class DotZZ {
     }
 
     const change = direction === "down";
-    const player = this.players[this.id];
+    const movement = this.players[this.id].movement;
 
     switch (key) {
       case "ArrowUp":
       case "w":
-        player.movement.up = change;
+        movement.up = change;
         break;
       case "ArrowDown":
       case "s":
-        player.movement.down = change;
+        movement.down = change;
         break;
       case "ArrowRight":
       case "d":
-        player.movement.right = change;
+        movement.right = change;
         break;
       case "ArrowLeft":
       case "a":
-        player.movement.left = change;
+        movement.left = change;
         break;
     }
 
-    this.move();
+    this.move(movement);
   }
 
   private listenMessage(data: string): void {
@@ -117,7 +118,6 @@ class DotZZ {
       delete this.sprites[id];
     } else if (parsed.kind === "initialize") {
       this.id = parsed.id;
-      this.move();
     } else if (parsed.kind === "addFood") {
       const id = parsed.id;
       const food = parsed.food;
@@ -186,10 +186,15 @@ class DotZZ {
   }
 
   private reconcilePlayers(): void {
-    for (const player of Object.values(this.players)) {
+    for (const [id, player] of Object.entries(this.players)) {
       const resolve = config.resolve;
+      const tolerance = config.tolerance;
 
-      if (Math.abs(player.offX) > resolve * 5) {
+      console.log(id, player.offX, player.offY);
+
+      if (Math.abs(player.offX) < tolerance) {
+        // pass
+      } else if (Math.abs(player.offX) > resolve * 10) {
         player.x += player.offX;
         player.offX = 0;
       } else if (player.offX < resolve && player.offX > -resolve) {
@@ -203,7 +208,9 @@ class DotZZ {
         player.offX -= resolve;
       }
 
-      if (Math.abs(player.offY) > resolve * 5) {
+      if (Math.abs(player.offY) < tolerance) {
+        // pass
+      } else if (Math.abs(player.offY) > resolve * 10) {
         player.y += player.offY;
         player.offY = 0;
       } else if (player.offY < resolve && player.offY > -resolve) {
@@ -242,7 +249,7 @@ class DotZZ {
     this.borders[3].y = originY + (config.height - currentPlayer.y);
   }
 
-  private move(): void {
+  private move(movement: Movement): void {
     if (this.id === undefined) {
       return;
     }
@@ -250,7 +257,7 @@ class DotZZ {
     this.connection.send(
       JSON.stringify({
         kind: "movePlayer",
-        movement: this.players[this.id].movement,
+        movement: movement,
       })
     );
   }
@@ -279,13 +286,24 @@ class DotZZ {
     );
 
     window.setInterval(() => {
+      console.time("frame");
+
       this.updatePlayers();
       this.updateBorders();
+
+      console.timeEnd("frame");
     }, config.frameRate);
 
     window.setInterval(() => {
-      this.move();
+      console.time("response");
+
       this.reconcilePlayers();
+
+      if (this.id !== undefined) {
+        this.move(this.players[this.id].movement);
+      }
+
+      console.timeEnd("response");
     }, config.responseRate);
 
     this.game.on("keydown", (event) => this.listenKeys("down", event.key));
@@ -314,17 +332,25 @@ if (
 main.hidden = true;
 name.focus();
 
-name.addEventListener("keydown", (event) => {
+const nameKeyDown = (event: KeyboardEvent): void => {
   if (event.key === "Enter") {
     play.click();
+    name.removeEventListener("keydown", nameKeyDown);
+    play.removeEventListener("click", playClick);
   }
-});
+};
 
-play.addEventListener("click", () => {
+const playClick = (): void => {
   const game = new DotZZ(main, name.value);
 
   main.hidden = false;
   connect.hidden = true;
 
   game.run();
-});
+
+  name.removeEventListener("keydown", nameKeyDown);
+  play.removeEventListener("click", playClick);
+};
+
+name.addEventListener("keydown", nameKeyDown);
+play.addEventListener("click", playClick);
