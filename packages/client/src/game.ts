@@ -26,15 +26,6 @@ class Game {
 
     this.context = context;
 
-    // setup automatic resize
-    this.canvas.height = window.innerHeight;
-    this.canvas.width = window.innerWidth;
-
-    window.addEventListener("resize", () => {
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = window.innerHeight;
-    });
-
     // setup tasks
     this.tasks = [];
 
@@ -55,7 +46,7 @@ class Game {
 
   private render(): void {
     // clear the canvas before rendering
-    this.context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     // run all tasks
     for (const task of this.tasks) {

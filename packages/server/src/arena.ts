@@ -1,6 +1,6 @@
 export { Arena };
 
-import { Food, Movement, Player } from "shared/sprites";
+import { Food, Movement, Player, Weapon } from "shared/sprites";
 import { defaultConfig as config } from "shared/config";
 import { v4 as uuidv4 } from "uuid";
 
@@ -78,5 +78,9 @@ class Arena {
 
   public removePlayer(id: string): void {
     delete this.players[id];
+  }
+
+  public addWeapon(playerId: string): void {
+
   }
 }

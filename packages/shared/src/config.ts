@@ -32,7 +32,7 @@ const defaultConfig: Config = {
   width: 4000,
   height: 4000,
   food: 400,
-  foodMass: 5,
+  foodMass: 1000,
   // velocity
   velocityIncrease: 0.4,
   velocityDecrease: 0.1,

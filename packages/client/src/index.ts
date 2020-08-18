@@ -2,6 +2,7 @@ import { BorderSprite, FoodSprite, PlayerSprite } from "client/sprites";
 import {
   Food,
   Player,
+  massToSize,
   move as movePlayer,
   restrict as restrictPlayer,
 } from "shared/sprites";
@@ -104,6 +105,7 @@ class DotZZ {
       player.movement = parsed.movement;
     } else if (parsed.kind === "massPlayer") {
       this.players[parsed.id].mass = parsed.mass;
+      this.resize()
     } else if (parsed.kind === "scorePlayer") {
       this.players[parsed.id].score = parsed.score;
     } else if (parsed.kind === "removePlayer") {
@@ -267,6 +269,18 @@ class DotZZ {
     }
   }
 
+  private resize(): void {
+    const size = massToSize(
+      this.id !== undefined ? this.players[this.id].mass : config.sizeBase
+    );
+    const modifier = 1 + (size / 5) * 0.01;
+
+    console.log(modifier);
+
+    this.game.canvas.height = window.innerHeight * modifier;
+    this.game.canvas.width = window.innerWidth * modifier;
+  }
+
   public run(): void {
     this.connection.addEventListener("message", (event) =>
       this.listenMessage(event.data)
@@ -277,6 +291,10 @@ class DotZZ {
         JSON.stringify({ kind: "initialize", name: this.name })
       )
     );
+
+    this.resize();
+
+    window.addEventListener("resize", () => this.resize());
 
     window.setInterval(() => {
       this.updatePlayers();
