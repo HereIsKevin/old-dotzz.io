@@ -31,7 +31,7 @@ const defaultConfig: Config = {
   // arena
   width: 4000,
   height: 4000,
-  food: 400,
+  food: 100,
   foodMass: 5,
   // velocity
   velocityIncrease: 0.4,
