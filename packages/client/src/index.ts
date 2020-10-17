@@ -79,8 +79,8 @@ class DotZZ {
       const id = parsed.id;
       const player = parsed.player;
 
-      const originX = this.target.width / 2;
-      const originY = this.target.height / 2;
+      const originX = (this.target.width / 2) / window.devicePixelRatio;
+      const originY = (this.target.height / 2) / window.devicePixelRatio;
 
       const currentX = this.id !== undefined ? this.players[this.id].x : 0;
       const currentY = this.id !== undefined ? this.players[this.id].y : 0;
@@ -122,8 +122,8 @@ class DotZZ {
       const id = parsed.id;
       const food = parsed.food;
 
-      const originX = this.target.width / 2;
-      const originY = this.target.height / 2;
+      const originX = (this.target.width / 2) / window.devicePixelRatio;
+      const originY = (this.target.height / 2) / window.devicePixelRatio;
 
       const currentX = this.id !== undefined ? this.players[this.id].x : 0;
       const currentY = this.id !== undefined ? this.players[this.id].y : 0;
@@ -148,8 +148,8 @@ class DotZZ {
 
     const currentPlayer = this.players[this.id];
 
-    const originX = this.target.width / 2;
-    const originY = this.target.height / 2;
+    const originX = (this.target.width / 2) / window.devicePixelRatio;
+    const originY = (this.target.height / 2) / window.devicePixelRatio;
 
     for (const [id, player] of Object.entries(this.players)) {
       movePlayer(player);
@@ -226,8 +226,8 @@ class DotZZ {
 
     const currentPlayer = this.players[this.id];
 
-    const originX = this.target.width / 2;
-    const originY = this.target.height / 2;
+    const originX = (this.target.width / 2) / window.devicePixelRatio;
+    const originY = (this.target.height / 2) / window.devicePixelRatio;
 
     this.borders[0].x = originX + (0 - currentPlayer.x);
     this.borders[0].y = originY + (0 - currentPlayer.y);
