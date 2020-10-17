@@ -27,12 +27,22 @@ class Game {
     this.context = context;
 
     // setup automatic resize
-    this.canvas.height = window.innerHeight;
-    this.canvas.width = window.innerWidth;
+    const pixelRatio = window.devicePixelRatio;
+
+    this.canvas.height = window.innerHeight * pixelRatio;
+    this.canvas.width = window.innerWidth * pixelRatio;
+
+    this.context.resetTransform();
+    this.context.scale(pixelRatio, pixelRatio);
 
     window.addEventListener("resize", () => {
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = window.innerHeight;
+      const pixelRatio = window.devicePixelRatio;
+
+      this.canvas.height = window.innerHeight * pixelRatio;
+      this.canvas.width = window.innerWidth * pixelRatio;
+
+      this.context.resetTransform();
+      this.context.scale(pixelRatio, pixelRatio);
     });
 
     // setup tasks
