@@ -28,13 +28,13 @@
   },
   "homepage": "https://github.com/HereIsKevin/dotzz.io#readme",
   "devDependencies": {
-    "@rollup/plugin-alias": "^3.1.1",
-    "javascript-obfuscator": "^1.10.2",
-    "nodemon": "^2.0.4",
+    "@rollup/plugin-alias": "^3.1.4",
+    "javascript-obfuscator": "^2.17.0",
+    "nodemon": "^2.0.12",
     "npm-run-all": "^4.1.5",
-    "rollup": "^2.26.3",
-    "shx": "^0.3.2",
-    "terser": "^5.1.0",
-    "typescript": "^3.9.7"
+    "rollup": "^2.53.3",
+    "shx": "^0.3.3",
+    "terser": "^5.7.1",
+    "typescript": "^4.3.5"
   }
 }
